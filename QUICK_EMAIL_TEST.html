@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Email Test - Trawish Cakes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #667eea; }
+        .test-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+        }
+        .test-btn:hover { opacity: 0.9; }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📧 Quick Email Test</h1>
+        <p>This will send a simple test email to verify EmailJS is working.</p>
+        
+        <label><strong>Test Email Address:</strong></label>
+        <input type="email" id="testEmail" value="ratedrsundram@gmail.com" placeholder="Enter email address">
+        
+        <button class="test-btn" onclick="sendQuickTest()">Send Test Email</button>
+        
+        <div id="result" class="result"></div>
+        
+        <div class="info result" style="display: block; margin-top: 20px;">
+            <strong>⚠️ Important:</strong> Make sure your EmailJS template has HTML enabled!<br>
+            In EmailJS dashboard → Template Settings → Enable "HTML" or "Content Type: HTML"
+        </div>
+    </div>
+
+    <!-- Load EmailJS wrapper (no CDN needed) -->
+    <script src="emailjs-wrapper.js"></script>
+    
+    <script>
+        let emailjsReady = false;
+        
+        // Initialize EmailJS wrapper
+        function initEmailJS() {
+            if (typeof EmailJS !== 'undefined' || typeof emailjs !== 'undefined') {
+                try {
+                    const emailjsLib = emailjs || EmailJS;
+                    emailjsLib.init("gk25DG3678o3wd9yM");
+                    emailjsReady = true;
+                    console.log('✅ EmailJS wrapper initialized successfully');
+                } catch (e) {
+                    console.error('❌ EmailJS initialization error:', e);
+                    showResult('❌ Error initializing EmailJS: ' + e.message, 'error');
+                }
+            } else {
+                console.error('❌ EmailJS wrapper not found');
+                showResult('❌ EmailJS wrapper failed to load. Please check that emailjs-wrapper.js exists.', 'error');
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                initEmailJS();
+            }, 100);
+        });
+        
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = 'result ' + type;
+            resultDiv.style.display = 'block';
+        }
+        
+        async function sendQuickTest() {
+            // Check if EmailJS is ready
+            if (!emailjsReady) {
+                if (typeof emailjs === 'undefined' && typeof EmailJS === 'undefined') {
+                    showResult('❌ Error: EmailJS wrapper not loaded. Please check that emailjs-wrapper.js exists in the same folder.', 'error');
+                    return;
+                }
+                
+                // Try to initialize now
+                try {
+                    const emailjsLib = emailjs || EmailJS;
+                    emailjsLib.init("gk25DG3678o3wd9yM");
+                    emailjsReady = true;
+                    console.log('✅ EmailJS initialized on demand');
+                } catch (e) {
+                    showResult('❌ Error: EmailJS not initialized. ' + e.message, 'error');
+                    return;
+                }
+            }
+            
+            const email = document.getElementById('testEmail').value;
+            
+            if (!email) {
+                showResult('Please enter an email address', 'error');
+                return;
+            }
+            
+            showResult('Sending test email...', 'info');
+            
+            const emailData = {
+                subject: 'Test Email from Trawish Cakes',
+                email: email,
+                message: '<h1 style="color: #667eea;">Test Email</h1><p>If you can see this HTML formatted message, EmailJS is working correctly!</p><p><strong>This is a test email.</strong></p>'
+            };
+            
+            try {
+                const emailjsLib = emailjs || EmailJS;
+                const response = await emailjsLib.send(
+                    'service_ge2gknw',
+                    'template_5iwy6n5',
+                    emailData
+                );
+                
+                console.log('EmailJS Response:', response);
+                showResult('✅ Email sent successfully! Status: ' + response.status + '. Check your inbox (and spam folder).', 'success');
+            } catch (error) {
+                console.error('EmailJS Error:', error);
+                let errorMsg = '❌ Error: ';
+                
+                if (error.status === 400) {
+                    errorMsg += 'Bad Request (400) - Check template variables match: {{subject}}, {{email}}, {{message}}';
+                } else if (error.status === 401) {
+                    errorMsg += 'Unauthorized (401) - Check your public key: gk25DG3678o3wd9yM';
+                } else if (error.status === 404) {
+                    errorMsg += 'Not Found (404) - Check Service ID: service_ge2gknw and Template ID: template_5iwy6n5';
+                } else if (error.message && error.message.includes('not defined')) {
+                    errorMsg += 'EmailJS library not loaded. Please refresh the page.';
+                } else if (error.message && error.message.includes('JSON')) {
+                    // JSON parsing error - this is usually fine, email was sent
+                    errorMsg = '⚠️ Warning: ' + error.message + ' (Email may have been sent successfully - check your inbox)';
+                } else {
+                    errorMsg += error.text || error.message || 'Unknown error';
+                }
+                
+                showResult(errorMsg, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
+

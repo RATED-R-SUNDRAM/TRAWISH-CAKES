@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Trawish Cakes</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #fffef7 0%, #fff5f5 50%, #fffef7 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 90% 80%, rgba(255, 182, 193, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .floating-cakes-auth {
+            position: absolute;
+            font-size: 3rem;
+            animation: floatCake 15s infinite ease-in-out;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .floating-cakes-auth:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+        .floating-cakes-auth:nth-child(2) { top: 60%; right: 15%; animation-delay: 5s; }
+        .floating-cakes-auth:nth-child(3) { bottom: 20%; left: 20%; animation-delay: 10s; }
+
+        .auth-box {
+            background: white;
+            padding: 50px;
+            border-radius: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            position: relative;
+            z-index: 1;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .auth-header p {
+            color: var(--text-color);
+            font-size: 1.1rem;
+        }
+
+        .auth-form {
+            margin-top: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 1.1rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-family: 'Fredoka', sans-serif;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+        }
+
+        .auth-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Fredoka', sans-serif;
+            margin-top: 10px;
+        }
+
+        .auth-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.4);
+        }
+
+        .auth-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .auth-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .auth-links a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="floating-cakes-auth">🎂</div>
+        <div class="floating-cakes-auth">🧁</div>
+        <div class="floating-cakes-auth">🍰</div>
+        
+        <div class="auth-box">
+            <div class="auth-header">
+                <h1>🎂 Welcome Back!</h1>
+                <p>Login to your Trawish Cakes account</p>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required placeholder="Enter your username">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="Enter your password">
+                </div>
+
+                <button type="submit" class="auth-button">Login 🎉</button>
+            </form>
+
+            <div class="auth-links">
+                <a href="signup.html">Create Account</a> |
+                <a href="forgot-password.html">Forgot Password?</a> |
+                <a href="index.html">Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="database.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        // Add success message display
+        function showSuccessMessage(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.style.cssText = 'background: #d4edda; color: #155724; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: block; text-align: center; font-weight: 600;';
+            successDiv.textContent = message;
+            
+            const authBox = document.querySelector('.auth-box');
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.style.display = 'none';
+            
+            if (authBox.querySelector('.success-message')) {
+                authBox.removeChild(authBox.querySelector('.success-message'));
+            }
+            
+            authBox.insertBefore(successDiv, authBox.querySelector('.auth-form'));
+            
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.style.transition = 'opacity 0.5s ease';
+                    successDiv.style.opacity = '0';
+                    setTimeout(() => successDiv.remove(), 500);
+                }
+            }, 3000);
+        }
+        
+        // Ensure DB is initialized
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof DB === 'undefined') {
+                console.error('Database not loaded!');
+                alert('Error: Database not loaded. Please refresh the page.');
+                return;
+            }
+            
+            // Initialize database
+            if (DB && DB.init) {
+                DB.init();
+            }
+        });
+    </script>
+</body>
+</html>
+

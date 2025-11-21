@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accept Order - Trawish Cakes</title>
+    <link rel="icon" type="image/png" href="LOGO/Screenshot 2025-11-14 232336.png">
+    <link rel="shortcut icon" type="image/png" href="LOGO/Screenshot 2025-11-14 232336.png">
+    <link rel="apple-touch-icon" href="LOGO/Screenshot 2025-11-14 232336.png">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="emailjs-wrapper.js"></script>
+    <script src="modal.js"></script>
+    <style>
+        .accept-container {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #ffeef5, #fff5e6, #ffe5f0);
+        }
+        
+        .accept-content {
+            background: white;
+            padding: 50px;
+            border-radius: 30px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        
+        .accept-content h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .order-details {
+            text-align: left;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 15px;
+        }
+        
+        .order-details p {
+            margin: 10px 0;
+            font-size: 1.1rem;
+        }
+        
+        .order-details strong {
+            color: var(--primary-color);
+        }
+        
+        .accept-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .btn-accept {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+        }
+        
+        .btn-decline {
+            background: linear-gradient(135deg, #f44336, #da190b);
+            color: white;
+        }
+        
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="accept-container">
+        <div class="accept-content">
+            <h1>🎂 Order Acceptance</h1>
+            <p>Review the order details below and accept or decline.</p>
+            
+            <div class="order-details" id="orderDetails">
+                <p><strong>Order ID:</strong> <span id="orderId"></span></p>
+                <p><strong>Customer Name:</strong> <span id="customerName"></span></p>
+                <p><strong>Customer Email:</strong> <span id="customerEmail"></span></p>
+            </div>
+            
+            <div class="accept-buttons">
+                <button class="btn-primary btn-accept" id="acceptBtn">✓ Accept Order</button>
+                <button class="btn-primary btn-decline" id="declineBtn">✗ Decline Order</button>
+            </div>
+            
+            <div class="message" id="message"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('orderId');
+        const customerEmail = urlParams.get('customerEmail');
+        const customerName = urlParams.get('customerName');
+        
+        // Display order details
+        if (orderId) {
+            document.getElementById('orderId').textContent = orderId;
+        }
+        if (customerName) {
+            document.getElementById('customerName').textContent = decodeURIComponent(customerName);
+        }
+        if (customerEmail) {
+            document.getElementById('customerEmail').textContent = decodeURIComponent(customerEmail);
+        }
+        
+        // Initialize EmailJS
+        (function() {
+            emailjs.init("YOUR_PUBLIC_KEY");
+        })();
+        
+        // Handle accept button
+        document.getElementById('acceptBtn').addEventListener('click', async () => {
+            if (!customerEmail || !customerName || !orderId) {
+                showMessage('Missing order information. Please contact us directly.', 'error');
+                return;
+            }
+            
+            try {
+                await sendAcceptanceEmail(orderId, decodeURIComponent(customerEmail), decodeURIComponent(customerName));
+                showMessage('Order accepted! Confirmation email has been sent to the customer.', 'success');
+                document.getElementById('acceptBtn').disabled = true;
+                document.getElementById('declineBtn').disabled = true;
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('There was an error sending the confirmation email. Please contact the customer directly.', 'error');
+            }
+        });
+        
+        // Handle decline button
+        document.getElementById('declineBtn').addEventListener('click', async () => {
+            if (!customerEmail || !customerName || !orderId) {
+                showMessage('Missing order information. Please contact us directly.', 'error');
+                return;
+            }
+            
+            const handleDecline = async () => {
+                try {
+                    await sendDeclineEmail(orderId, decodeURIComponent(customerEmail), decodeURIComponent(customerName));
+                    showMessage('Customer has been notified about the order decline.', 'success');
+                    document.getElementById('acceptBtn').disabled = true;
+                    document.getElementById('declineBtn').disabled = true;
+                } catch (error) {
+                    console.error('Error:', error);
+                    showMessage('Please contact the customer directly to inform them.', 'error');
+                }
+            };
+            
+            if (typeof CustomModal !== 'undefined') {
+                CustomModal.confirm(
+                    'Are you sure you want to decline this order?',
+                    handleDecline,
+                    () => {}
+                );
+            } else {
+                if (confirm('Are you sure you want to decline this order?')) {
+                    handleDecline();
+                }
+            }
+        });
+        
+        // Send acceptance email
+        async function sendAcceptanceEmail(orderId, customerEmail, customerName) {
+            const emailData = {
+                to_email: customerEmail,
+                customer_name: customerName,
+                order_id: orderId,
+                subject: 'Your Cake Order Has Been Accepted! 🎉',
+                message: `Dear ${customerName},
+
+Great news! Your cake order (Order ID: ${orderId}) has been accepted!
+
+We're excited to create your special cake. Our team will be in touch with you shortly to confirm the final details and delivery arrangements.
+
+Thank you for choosing Trawish Cakes!
+
+Best regards,
+Trawish Cakes Team
+Email: ss6437p@gmail.com`
+            };
+            
+            // Try EmailJS first
+            try {
+                const serviceId = 'YOUR_SERVICE_ID';
+                const templateId = 'YOUR_ACCEPTANCE_TEMPLATE_ID';
+                
+                if (serviceId !== 'YOUR_SERVICE_ID' && templateId !== 'YOUR_ACCEPTANCE_TEMPLATE_ID') {
+                    await emailjs.send(serviceId, templateId, emailData);
+                } else {
+                    // Fallback to mailto
+                    sendAcceptanceViaMailto(orderId, customerEmail, customerName);
+                }
+            } catch (error) {
+                sendAcceptanceViaMailto(orderId, customerEmail, customerName);
+            }
+        }
+        
+        // Fallback mailto for acceptance
+        function sendAcceptanceViaMailto(orderId, customerEmail, customerName) {
+            const subject = encodeURIComponent(`Order Accepted - ${orderId}`);
+            const body = encodeURIComponent(`Dear ${customerName},
+
+Great news! Your cake order (Order ID: ${orderId}) has been accepted!
+
+We're excited to create your special cake. Our team will be in touch with you shortly to confirm the final details and delivery arrangements.
+
+Thank you for choosing Trawish Cakes!
+
+Best regards,
+Trawish Cakes Team`);
+            
+            window.location.href = `mailto:${customerEmail}?subject=${subject}&body=${body}`;
+        }
+        
+        // Send decline email
+        async function sendDeclineEmail(orderId, customerEmail, customerName) {
+            const emailData = {
+                to_email: customerEmail,
+                customer_name: customerName,
+                order_id: orderId
+            };
+            
+            // Try EmailJS first
+            try {
+                const serviceId = 'YOUR_SERVICE_ID';
+                const templateId = 'YOUR_DECLINE_TEMPLATE_ID';
+                
+                if (serviceId !== 'YOUR_SERVICE_ID' && templateId !== 'YOUR_DECLINE_TEMPLATE_ID') {
+                    await emailjs.send(serviceId, templateId, emailData);
+                } else {
+                    // Fallback to mailto
+                    sendDeclineViaMailto(orderId, customerEmail, customerName);
+                }
+            } catch (error) {
+                sendDeclineViaMailto(orderId, customerEmail, customerName);
+            }
+        }
+        
+        // Fallback mailto for decline
+        function sendDeclineViaMailto(orderId, customerEmail, customerName) {
+            const subject = encodeURIComponent(`Regarding Your Order - ${orderId}`);
+            const body = encodeURIComponent(`Dear ${customerName},
+
+We regret to inform you that we are unable to fulfill your order (Order ID: ${orderId}) at this time.
+
+We apologize for any inconvenience. Please feel free to contact us at ss6437p@gmail.com to discuss alternative options.
+
+Thank you for your understanding.
+
+Best regards,
+Trawish Cakes Team`);
+            
+            window.location.href = `mailto:${customerEmail}?subject=${subject}&body=${body}`;
+        }
+        
+        // Show message
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Trawish Cakes</title>
+    <link rel="icon" type="image/png" href="LOGO/Screenshot 2025-11-14 232336.png">
+    <link rel="shortcut icon" type="image/png" href="LOGO/Screenshot 2025-11-14 232336.png">
+    <link rel="apple-touch-icon" href="LOGO/Screenshot 2025-11-14 232336.png">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="emailjs-wrapper.js"></script>
+    <style>
+        .admin-container {
+            min-height: 100vh;
+            padding: 100px 20px 50px;
+            background: linear-gradient(135deg, #fffef7 0%, #fff5f5 50%, #fffef7 100%);
+        }
+
+        .admin-header {
+            max-width: 1200px;
+            margin: 0 auto 40px;
+            text-align: center;
+        }
+
+        .filter-section {
+            max-width: 1200px;
+            margin: 0 auto 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-section label {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--primary-color);
+            background: white;
+            color: var(--primary-color);
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .filter-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .admin-header h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .admin-header a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .orders-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .order-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .order-id {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .order-status {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .status-0 { background: #ffe5e5; color: #dc3545; }
+        .status-1 { background: #fff3cd; color: #856404; }
+        .status-2 { background: #d1ecf1; color: #0c5460; }
+        .status-3 { background: #d4edda; color: #155724; }
+        .status-4 { background: #d1ecf1; color: #0c5460; }
+        .status-5 { background: #d4edda; color: #155724; }
+
+        .order-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .detail-item {
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+        }
+
+        .detail-item strong {
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .admin-actions {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .action-group {
+            margin-bottom: 20px;
+        }
+
+        .action-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .action-group input {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .admin-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .btn-generate-invoice {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+        }
+
+        .btn-confirm-payment {
+            background: linear-gradient(135deg, #28a745, #218838);
+            color: white;
+        }
+
+        .btn-order-ready {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            color: white;
+        }
+
+        .btn-order-delivered {
+            background: linear-gradient(135deg, #28a745, #218838);
+            color: white;
+        }
+
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .payment-proof {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 10px;
+            border: 2px dashed #ffc107;
+        }
+
+        .payment-proof img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .no-orders {
+            text-align: center;
+            padding: 60px 20px;
+            font-size: 1.5rem;
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>🎂 Admin Dashboard</h1>
+            <p><a href="index.html">← Back to Website</a></p>
+        </div>
+
+        <div class="filter-section">
+            <label>Filter Orders:</label>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-status="all" onclick="filterOrders('all')">All Orders</button>
+                <button class="filter-btn" data-status="1" onclick="filterOrders(1)">Order Requested</button>
+                <button class="filter-btn" data-status="2" onclick="filterOrders(2)">Invoice Generated</button>
+                <button class="filter-btn" data-status="3" onclick="filterOrders(3)">Payment Received</button>
+                <button class="filter-btn" data-status="4" onclick="filterOrders(4)">Ready</button>
+                <button class="filter-btn" data-status="5" onclick="filterOrders(5)">Delivered</button>
+                <button class="filter-btn" data-status="0" onclick="filterOrders(0)">Rejected</button>
+            </div>
+        </div>
+
+        <div class="orders-container" id="ordersContainer">
+            <div class="no-orders">No orders yet. Orders will appear here when customers place them.</div>
+        </div>
+        
+        <!-- Ratings Section -->
+        <div class="ratings-section" style="max-width: 1200px; margin: 40px auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);">
+            <h2 style="color: #667eea; margin-bottom: 20px;">⭐ Customer Ratings</h2>
+            <div id="ratingsContainer">
+                <div class="no-ratings">No ratings yet. Ratings will appear here when customers rate their orders.</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="database.js"></script>
+    <script src="auth.js"></script>
+    <script src="email-service.js"></script>
+    <script src="modal.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
+

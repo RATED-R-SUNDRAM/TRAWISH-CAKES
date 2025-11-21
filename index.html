@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trawish Cakes - Delicious Cakes for Every Occasion</title>
+    <link rel="icon" type="image/png" href="LOGO/Screenshot 2025-11-14 232336.png">
+    <link rel="shortcut icon" type="image/png" href="LOGO/Screenshot 2025-11-14 232336.png">
+    <link rel="apple-touch-icon" href="LOGO/Screenshot 2025-11-14 232336.png">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="emailjs-wrapper.js"></script>
+</head>
+<body>
+    <!-- Cake Splitting Animation Overlay -->
+    <div id="cakeAnimation" class="cake-animation-overlay">
+        <div class="cake-container">
+            <div class="cake-base"></div>
+            <div class="cake-layer-1"></div>
+            <div class="cake-layer-2"></div>
+            <div class="cake-left"></div>
+            <div class="cake-right"></div>
+            <div class="cake-center"></div>
+            <div class="cake-top"></div>
+        </div>
+        <div class="animation-text">Welcome to Trawish Cakes!</div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="header" id="header">
+        <div class="nav-container">
+            <div class="logo-container">
+                <img src="LOGO/Screenshot 2025-11-14 232336.png" alt="Trawish Cakes Logo" class="logo">
+                <span class="logo-text">Trawish Cakes</span>
+            </div>
+            <nav class="nav-menu" id="navMenu">
+                <a href="#home" class="nav-link active">HOME</a>
+                <a href="#about" class="nav-link">ABOUT</a>
+                <a href="#gallery" class="nav-link">GALLERY</a>
+                <a href="#accounts" class="nav-link" id="accountsLink" style="display: none;">ACCOUNTS</a>
+                <a href="#contact" class="nav-link">CONTACT</a>
+                <a href="#" class="nav-link" id="loginLink">LOGIN</a>
+                <a href="#" class="nav-link" id="logoutLink" style="display: none;">LOGOUT</a>
+            </nav>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Home Section -->
+    <section id="home" class="section home-section">
+        <div class="background-cakes" id="backgroundCakes"></div>
+        <div class="stars-container" id="starsContainer"></div>
+        
+        <div class="home-content">
+            <h1 class="main-title">Delicious Cakes Made with Love</h1>
+            <p class="subtitle">Custom cakes for every special occasion</p>
+            <button class="cta-button order-button" id="orderButton">
+                <span class="button-text">🎂 Place an Order</span>
+                <span class="button-sparkle">✨</span>
+            </button>
+        </div>
+        
+        <div class="floating-elements">
+            <div class="floating-cake">🎂</div>
+            <div class="floating-cake">🧁</div>
+            <div class="floating-cake">🍰</div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section about-section">
+        <div class="container">
+            <h2 class="section-title">About Us 🍰✨</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <p>Welcome to Trawish Cakes — where every creation is a celebration! 🎉 We believe cakes aren't just desserts; they're edible expressions of joy, crafted with heart and a personal touch 💖. Whether it's a towering showstopper or a delicately customized treat, we specialize in bringing your sweetest visions to life 🎂.</p>
+                    <p>Led by a passionate woman entrepreneur 👩‍🍳, our bakery is built on the pillars of honesty, creativity, and customer satisfaction. From birthdays and weddings to surprise parties and milestone moments, we pour our soul into every layer, swirl, and sprinkle 🌈.</p>
+                    <p>Customization is our forte — big cakes, bold designs, and flavors that speak your story 🍓🍫. At Trawish Cakes, we don't just bake; we create memories, one slice at a time 🧁💫.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="section gallery-section">
+        <div class="container">
+            <h2 class="section-title">Our Cake Gallery</h2>
+            <div class="gallery-container">
+                <div class="gallery-slider" id="gallerySlider">
+                    <button class="gallery-arrow gallery-prev" id="galleryPrev">‹</button>
+                    <div class="gallery-images" id="galleryImages"></div>
+                    <button class="gallery-arrow gallery-next" id="galleryNext">›</button>
+                </div>
+                <div class="gallery-indicators" id="galleryIndicators"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Accounts Section -->
+    <section id="accounts" class="section accounts-section" style="display: none;">
+        <div class="container">
+            <h2 class="section-title">My Orders</h2>
+            <div id="ordersList" class="orders-list">
+                <p class="no-orders">You don't have any orders yet. Place your first order now! 🎂</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section contact-section">
+        <div class="container">
+            <h2 class="section-title">Get in Touch</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <span class="contact-icon">📧</span>
+                        <div>
+                            <h3>Email</h3>
+                            <p>ss6437p@gmail.com</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <span class="contact-icon">📱</span>
+                        <div>
+                            <h3>Phone</h3>
+                            <p>+919158518961
+                            </p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <span class="contact-icon">📍</span>
+                        <div>
+                            <h3>Location</h3>
+                            <h4>Available for pickup and delivery</h4>
+                            <p>Solacia Internal Road, Near RMC Garden, Wagholi, Pune</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Order Form Modal -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content cake-modal">
+            <button class="modal-close" id="modalClose">&times;</button>
+            <div class="modal-header">
+                <h2>🎂 Place Your Cake Order</h2>
+                <p>Fill in the details below and we'll get back to you soon!</p>
+            </div>
+            <form id="orderForm" class="order-form">
+                <div class="form-group">
+                    <label for="customerName">Your Name *</label>
+                    <input type="text" id="customerName" name="customerName" required placeholder="Enter your name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerEmail">Your Email *</label>
+                    <input type="email" id="customerEmail" name="customerEmail" required placeholder="your.email@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerPhone">Phone Number *</label>
+                    <input type="tel" id="customerPhone" name="customerPhone" required placeholder="9876543210" pattern="[0-9]{10}" maxlength="10" minlength="10">
+                    <small style="display: block; margin-top: 5px; color: #666;">Enter 10 digit Indian mobile number</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cakeType">Cake Type *</label>
+                    <select id="cakeType" name="cakeType" required>
+                        <option value="">Select cake type</option>
+                        <option value="Birthday Cake">🎂 Birthday Cake</option>
+                        <option value="Wedding Cake">💒 Wedding Cake</option>
+                        <option value="Anniversary Cake">💑 Anniversary Cake</option>
+                        <option value="Chocolate Cake">🍫 Chocolate Cake</option>
+                        <option value="Red Velvet Cake">❤️ Red Velvet Cake</option>
+                        <option value="Vanilla Cake">🌿 Vanilla Cake</option>
+                        <option value="Custom Design">🎨 Custom Design</option>
+                        <option value="Other">✨ Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cakeWeight">Cake Weight/Size *</label>
+                    <select id="cakeWeight" name="cakeWeight" required>
+                        <option value="">Select size</option>
+                        <option value="Small (1-2 lbs)">Small (1-2 lbs) - Serves 4-6</option>
+                        <option value="Medium (2-3 lbs)">Medium (2-3 lbs) - Serves 8-10</option>
+                        <option value="Large (3-5 lbs)">Large (3-5 lbs) - Serves 12-16</option>
+                        <option value="Extra Large (5-8 lbs)">Extra Large (5-8 lbs) - Serves 20-25</option>
+                        <option value="Custom Size">Custom Size</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="deliveryDate">Preferred Delivery Date *</label>
+                    <input type="date" id="deliveryDate" name="deliveryDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customization">Customization Details</label>
+                    <textarea id="customization" name="customization" rows="4" placeholder="Tell us about your design ideas, colors, themes, flavors, special messages, or any other details..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="specialRequests">Special Requests or Allergies</label>
+                    <textarea id="specialRequests" name="specialRequests" rows="3" placeholder="Any dietary restrictions, allergies, or special instructions..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sampleImage">Upload Sample Image (Optional)</label>
+                    <input type="file" id="sampleImage" name="sampleImage" accept="image/*">
+                    <small style="display: block; margin-top: 5px; color: #666;">Upload a reference image or design inspiration for your cake</small>
+                    <div id="imagePreview" style="margin-top: 10px; display: none;">
+                        <img id="previewImg" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 10px; border: 2px solid #ddd;">
+                        <button type="button" onclick="removeImagePreview()" style="display: block; margin-top: 5px; padding: 5px 10px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer;">Remove Image</button>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelOrder">Cancel</button>
+                    <button type="submit" class="btn-primary">
+                        <span>Submit Order</span>
+                        <span class="button-sparkle">✨</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="success-message">
+        <div class="success-content">
+            <span class="success-icon">🎉</span>
+            <h3>Order Submitted Successfully!</h3>
+            <p>We've received your order and will contact you soon!</p>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>Life is what you bake it! 🎂 Don't worry, be cake-y! At Trawish Cakes, we're not crummy at what we do - we're the frosting on top of perfection! 💕</p>
+    </footer>
+
+    <script src="database.js"></script>
+    <script src="auth.js"></script>
+    <script src="email-service.js"></script>
+    <script src="modal.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
