@@ -262,6 +262,23 @@ const DB = {
         if (ratings.length === 0) return 0;
         const sum = ratings.reduce((acc, r) => acc + r.rating, 0);
         return (sum / ratings.length).toFixed(1);
+    },
+
+    // Utility function to clear all orders (useful for reset/deployment)
+    clearAllOrders() {
+        localStorage.setItem('trawish_orders', JSON.stringify([]));
+        return { success: true, message: 'All orders cleared' };
+    },
+
+    // Utility function to clear all data (for complete reset)
+    clearAllData() {
+        localStorage.removeItem('trawish_orders');
+        localStorage.removeItem('trawish_ratings');
+        localStorage.removeItem('trawish_reset_tokens');
+        // Keep users but you can remove if needed
+        // localStorage.removeItem('trawish_users');
+        this.init(); // Reinitialize to ensure admin user exists
+        return { success: true, message: 'All data cleared (users preserved)' };
     }
 };
 

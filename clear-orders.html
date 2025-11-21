@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Orders - Trawish Cakes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #fffef7 0%, #fff5f5 50%, #fffef7 100%);
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #ff6b9d, #c471ed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .info {
+            background: #f0f8ff;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #ff6b9d;
+        }
+
+        .info p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ff6b9d;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .btn-clear-orders {
+            background: linear-gradient(135deg, #ff6b9d, #c471ed);
+            color: white;
+        }
+
+        .btn-clear-all {
+            background: linear-gradient(135deg, #ff4757, #c44569);
+            color: white;
+        }
+
+        .btn-refresh {
+            background: linear-gradient(135deg, #3742fa, #2f3542);
+            color: white;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .back-link {
+            margin-top: 30px;
+            display: block;
+            color: #ff6b9d;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎂 Clear Database</h1>
+        <p style="color: #666; margin-bottom: 30px;">Utility to clear orders and data before deployment</p>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="number" id="ordersCount">0</div>
+                <div class="label">Orders</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="usersCount">0</div>
+                <div class="label">Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="ratingsCount">0</div>
+                <div class="label">Ratings</div>
+            </div>
+        </div>
+
+        <div class="info">
+            <p><strong>⚠️ Important:</strong></p>
+            <p>Before deploying to Netlify or GitHub Pages, clear all test orders from your browser's localStorage.</p>
+            <p>This will <strong>NOT</strong> affect the code - only your browser's stored data.</p>
+        </div>
+
+        <div class="buttons">
+            <button class="btn-clear-orders" onclick="clearOrders()">
+                🗑️ Clear All Orders
+            </button>
+            <button class="btn-clear-all" onclick="clearAllData()">
+                🗑️ Clear Everything (Keep Users)
+            </button>
+            <button class="btn-refresh" onclick="loadStats()">
+                🔄 Refresh Stats
+            </button>
+        </div>
+
+        <div class="message" id="message"></div>
+
+        <a href="index.html" class="back-link">← Back to Home</a>
+    </div>
+
+    <script src="database.js"></script>
+    <script>
+        // Load statistics on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+        });
+
+        function loadStats() {
+            // Get orders count
+            const orders = JSON.parse(localStorage.getItem('trawish_orders') || '[]');
+            document.getElementById('ordersCount').textContent = orders.length;
+
+            // Get users count
+            const users = JSON.parse(localStorage.getItem('trawish_users') || '[]');
+            document.getElementById('usersCount').textContent = users.length;
+
+            // Get ratings count
+            const ratings = JSON.parse(localStorage.getItem('trawish_ratings') || '[]');
+            document.getElementById('ratingsCount').textContent = ratings.length;
+        }
+
+        function clearOrders() {
+            if (confirm('Are you sure you want to clear ALL orders? This cannot be undone!')) {
+                try {
+                    if (typeof DB !== 'undefined' && DB.clearAllOrders) {
+                        const result = DB.clearAllOrders();
+                        showMessage('✅ All orders cleared successfully!', 'success');
+                        loadStats();
+                    } else {
+                        localStorage.setItem('trawish_orders', JSON.stringify([]));
+                        showMessage('✅ All orders cleared successfully!', 'success');
+                        loadStats();
+                    }
+                } catch (error) {
+                    showMessage('❌ Error clearing orders: ' + error.message, 'error');
+                }
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('⚠️ WARNING: This will clear ALL data except users!\n\nThis includes:\n- All Orders\n- All Ratings\n- All Reset Tokens\n\nAre you absolutely sure?')) {
+                try {
+                    if (typeof DB !== 'undefined' && DB.clearAllData) {
+                        const result = DB.clearAllData();
+                        showMessage('✅ All data cleared successfully! (Users preserved)', 'success');
+                        loadStats();
+                    } else {
+                        localStorage.removeItem('trawish_orders');
+                        localStorage.removeItem('trawish_ratings');
+                        localStorage.removeItem('trawish_reset_tokens');
+                        showMessage('✅ All data cleared successfully! (Users preserved)', 'success');
+                        loadStats();
+                    }
+                } catch (error) {
+                    showMessage('❌ Error clearing data: ' + error.message, 'error');
+                }
+            }
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
+

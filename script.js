@@ -251,13 +251,15 @@ function displayGalleryImages() {
         const wrapper = document.createElement('div');
         wrapper.className = 'gallery-image-wrapper';
         if (index === 0) wrapper.classList.add('active-wrapper');
-        wrapper.style.cssText = `position: absolute; width: 100%; height: 100%; display: ${index === 0 ? 'flex' : 'none'}; align-items: center; justify-content: center; z-index: ${index === 0 ? 1 : 0};`;
+        // Let CSS handle all positioning - only set display for visibility
+        wrapper.style.display = index === 0 ? 'flex' : 'none';
         
         const imgElement = document.createElement('img');
         imgElement.src = img.path;
         imgElement.alt = `Cake ${index + 1}`;
         imgElement.className = 'gallery-image';
-        imgElement.style.cssText = 'max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; opacity: ' + (index === 0 ? '1' : '0') + ';';
+        // Let CSS handle sizing - only set opacity
+        imgElement.style.opacity = index === 0 ? '1' : '0';
         if (index === 0) imgElement.classList.add('active');
         
         wrapper.appendChild(imgElement);
