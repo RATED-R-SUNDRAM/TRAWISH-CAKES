@@ -46,7 +46,7 @@ A beautiful, responsive cake company website with animations, dynamic image load
 ### Email Template Variables
 
 For the **Order Template**, use these variables:
-- `{{to_email}}` - Owner's email (ss6437p@gmail.com)
+- `{{to_email}}` - Owner's email (trawishcakes@gmail.com)
 - `{{customer_name}}` - Customer's name
 - `{{customer_email}}` - Customer's email
 - `{{customer_phone}}` - Customer's phone
@@ -69,7 +69,7 @@ For the **Acceptance Template**, use:
 
 1. **Home Page**: Displays with cake splitting animation, random background cake images, and glittery stars
 2. **Order Form**: Click "Place an Order" button to open the attractive cake-themed form
-3. **Order Submission**: Form data is sent via email to ss6437p@gmail.com with an acceptance link
+3. **Order Submission**: Form data is sent via email to trawishcakes@gmail.com with an acceptance link
 4. **Order Acceptance**: Click the acceptance link to accept/decline the order
 5. **Customer Confirmation**: Once accepted, customer receives a confirmation email
 
@@ -109,5 +109,5 @@ TRAWISH CAKES/
 
 ## Support
 
-For issues or questions, contact: ss6437p@gmail.com
+For issues or questions, contact: trawishcakes@gmail.com
 

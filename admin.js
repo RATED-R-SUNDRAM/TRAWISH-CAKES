@@ -1,10 +1,19 @@
 // Admin Dashboard Functionality
 
 let currentFilter = 'all';
+let ordersUnsubscribe = null; // For real-time listener
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadOrders();
-    loadRatings();
+document.addEventListener('DOMContentLoaded', async () => {
+    // Wait for Firebase to initialize (longer delay to ensure Firebase is ready)
+    setTimeout(async () => {
+        console.log('🚀 Admin: Starting admin dashboard initialization...');
+        console.log('🔍 Admin: Checking Firebase availability...');
+        console.log('🔍 Admin: DB available?', typeof DB !== 'undefined');
+        console.log('🔍 Admin: isFirebaseAvailable?', typeof isFirebaseAvailable !== 'undefined' ? isFirebaseAvailable() : 'function not defined');
+        
+        await loadOrders();
+        await loadRatings();
+    }, 1000); // Increased delay to ensure Firebase is fully initialized
 });
 
 function filterOrders(status) {
@@ -16,29 +25,255 @@ function filterOrders(status) {
     });
     document.querySelector(`[data-status="${status}"]`)?.classList.add('active');
     
-    // Reload orders with filter
+    // Reload orders with filter (real-time listener will handle updates)
+    if (ordersUnsubscribe) {
+        // Unsubscribe old listener
+        ordersUnsubscribe();
+    }
     loadOrders();
 }
 
-function loadOrders() {
-    let orders = DB.getOrders();
+async function loadOrders() {
     const container = document.getElementById('ordersContainer');
-    
-    // Apply filter
-    if (currentFilter !== 'all') {
-        const filterStatus = parseInt(currentFilter);
-        orders = orders.filter(order => order.status === filterStatus);
+    if (!container) {
+        console.error('❌ ordersContainer not found in admin dashboard');
+        return;
     }
     
+    // Show loading state
+    container.innerHTML = '<div class="no-orders">Loading orders... 🔄</div>';
+    
+    try {
+        // First, try to load orders immediately (fallback)
+        console.log('📋 Admin: Loading orders immediately...');
+        console.log('🔍 Admin: DB available?', typeof DB !== 'undefined');
+        console.log('🔍 Admin: DB.getOrders available?', typeof DB !== 'undefined' && typeof DB.getOrders === 'function');
+        console.log('🔍 Admin: isFirebaseAvailable?', typeof isFirebaseAvailable !== 'undefined' ? isFirebaseAvailable() : 'function not defined');
+        
+        if (DB && DB.getOrders) {
+            try {
+                console.log('🔄 Admin: Calling DB.getOrders()...');
+                const initialOrders = await DB.getOrders();
+                console.log('✅ Admin: Initial load - Found', initialOrders.length, 'orders');
+                console.log('📦 Admin: Order details:', initialOrders);
+                
+                // Check if initialOrders is valid
+                if (!initialOrders || !Array.isArray(initialOrders)) {
+                    console.warn('⚠️ Admin: Invalid orders data from initial load');
+                    container.innerHTML = '<div class="no-orders">Error loading orders. Please refresh the page.</div>';
+                    return;
+                }
+                
+                console.log('📋 Admin: Initial orders loaded:', initialOrders.length);
+                // Always call displayOrders - it will handle empty array correctly
+                displayOrders(initialOrders);
+            } catch (loadError) {
+                console.error('❌ Error loading orders initially:', loadError);
+                console.error('❌ Error name:', loadError.name);
+                console.error('❌ Error message:', loadError.message);
+                console.error('❌ Error stack:', loadError.stack);
+                container.innerHTML = '<div class="no-orders">Error loading orders. Please check console for details.<br><button onclick="location.reload()" style="margin-top: 10px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">Refresh Page</button></div>';
+            }
+        } else {
+            console.error('❌ Admin: DB or DB.getOrders not available!');
+            console.error('❌ Admin: DB =', typeof DB);
+            console.error('❌ Admin: DB.getOrders =', typeof DB !== 'undefined' ? typeof DB.getOrders : 'N/A');
+            container.innerHTML = '<div class="no-orders">Database not available. Please refresh the page.<br><button onclick="location.reload()" style="margin-top: 10px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">Refresh Page</button></div>';
+        }
+        
+        // Then set up real-time listener for future updates
+        if (DB && DB.onOrdersUpdate && isFirebaseAvailable()) {
+            // Unsubscribe previous listener if exists
+            if (ordersUnsubscribe) {
+                console.log('🔄 Admin: Unsubscribing old listener...');
+                ordersUnsubscribe();
+                ordersUnsubscribe = null;
+            }
+            
+            // Set up real-time listener
+            console.log('👂 Admin: Setting up real-time listener for all orders...');
+            try {
+                ordersUnsubscribe = DB.onOrdersUpdate((orders) => {
+                    console.log('📬 Admin: Real-time update received', orders ? orders.length : 0, 'orders');
+                    console.log('📦 Admin: Orders array:', orders);
+                    
+                    // Check if orders is valid array
+                    if (!orders || !Array.isArray(orders)) {
+                        console.warn('⚠️ Admin: Invalid orders data received');
+                        container.innerHTML = '<div class="no-orders">Error loading orders. Please refresh the page.</div>';
+                        return;
+                    }
+                    
+                    // Only update if user is not currently typing in an input field
+                    const activeElement = document.activeElement;
+                    const isTypingInInvoiceInput = activeElement && 
+                        activeElement.tagName === 'INPUT' && 
+                        activeElement.id && 
+                        activeElement.id.startsWith('invoiceAmount_') &&
+                        activeElement === document.activeElement;
+                    
+                    if (isTypingInInvoiceInput) {
+                        console.log('⏸️ Admin: Skipping update - user is typing in invoice input');
+                        // Store orders for later update
+                        window.pendingOrdersUpdate = orders;
+                        return;
+                    }
+                    
+                    // Always call displayOrders - it will handle empty array
+                    displayOrders(orders);
+                });
+                
+                // Also set up a periodic refresh as backup (every 5 seconds, less frequent to avoid interrupting typing)
+                if (!window.adminOrdersRefreshInterval) {
+                    window.adminOrdersRefreshInterval = setInterval(async () => {
+                        // Only refresh if user is not typing
+                        const activeElement = document.activeElement;
+                        const isTypingInInvoiceInput = activeElement && 
+                            activeElement.tagName === 'INPUT' && 
+                            activeElement.id && 
+                            activeElement.id.startsWith('invoiceAmount_');
+                        
+                        if (isTypingInInvoiceInput) {
+                            console.log('⏸️ Admin: Skipping periodic refresh - user is typing');
+                            return;
+                        }
+                        
+                        console.log('🔄 Admin: Periodic refresh of orders...');
+                        try {
+                            if (DB && DB.getOrders) {
+                                const refreshedOrders = await DB.getOrders();
+                                console.log('📋 Admin: Periodic refresh - Found', refreshedOrders ? refreshedOrders.length : 0, 'orders');
+                                // Always call displayOrders - it will handle empty array
+                                if (refreshedOrders && Array.isArray(refreshedOrders)) {
+                                    displayOrders(refreshedOrders);
+                                }
+                            }
+                        } catch (refreshError) {
+                            console.error('❌ Error in periodic refresh:', refreshError);
+                        }
+                    }, 5000); // Refresh every 5 seconds (less frequent to avoid interrupting typing)
+                }
+            } catch (listenerError) {
+                console.error('❌ Error setting up real-time listener:', listenerError);
+                // Continue with periodic refresh only
+            }
+        } else {
+            console.warn('⚠️ Admin: Real-time listener not available, using periodic refresh only');
+            // Set up periodic refresh only
+            if (!window.adminOrdersRefreshInterval) {
+                window.adminOrdersRefreshInterval = setInterval(async () => {
+                    console.log('🔄 Admin: Periodic refresh (no listener)...');
+                    try {
+                        if (DB && DB.getOrders) {
+                            const refreshedOrders = await DB.getOrders();
+                            console.log('📋 Admin: Periodic refresh (fallback) - Found', refreshedOrders ? refreshedOrders.length : 0, 'orders');
+                            // Always call displayOrders - it will handle empty array
+                            if (refreshedOrders && Array.isArray(refreshedOrders)) {
+                                displayOrders(refreshedOrders);
+                            }
+                        }
+                    } catch (refreshError) {
+                        console.error('❌ Error in periodic refresh:', refreshError);
+                    }
+                }, 2000); // Refresh every 2 seconds (more frequent without listener)
+            }
+        }
+    } catch (error) {
+        console.error('❌ Error loading orders:', error);
+        console.error('❌ Error stack:', error.stack);
+        container.innerHTML = '<div class="no-orders">Error loading orders. Please refresh the page.<br><button onclick="location.reload()" style="margin-top: 10px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">Refresh Page</button></div>';
+    }
+}
+
+function displayOrders(orders) {
+    const container = document.getElementById('ordersContainer');
+    if (!container) {
+        console.error('❌ ordersContainer not found when trying to display orders');
+        return;
+    }
+    
+    // Validate orders array first
+    if (!orders || !Array.isArray(orders)) {
+        console.error('❌ Admin: Invalid orders data:', orders);
+        container.innerHTML = '<div class="no-orders">Error loading orders. Please refresh the page.</div>';
+        return;
+    }
+    
+    console.log('📋 Admin: Displaying', orders.length, 'orders');
+    
+    // Check if orders array is empty BEFORE processing
     if (orders.length === 0) {
-        container.innerHTML = '<div class="no-orders">No orders found' + (currentFilter !== 'all' ? ' with the selected filter' : '') + '. Orders will appear here when customers place them.</div>';
+        console.log('📭 Admin: Orders array is empty');
+        container.innerHTML = '<div class="no-orders">No orders found. Orders will appear here when customers place orders.</div>';
+        return;
+    }
+    
+    // Preserve input values before re-rendering
+    const inputValues = {};
+    const allInputs = container.querySelectorAll('input[type="number"][id^="invoiceAmount_"]');
+    allInputs.forEach(input => {
+        if (input.value && !input.disabled) {
+            const orderId = input.id.replace('invoiceAmount_', '');
+            inputValues[orderId] = input.value;
+        }
+    });
+    
+    // Apply filter
+    let filteredOrders = orders;
+    
+    if (currentFilter === 'archived') {
+        // Show only archived orders
+        filteredOrders = orders.filter(order => order.archived === true);
+        console.log('📦 Admin: Showing archived orders:', filteredOrders.length);
+    } else if (currentFilter !== 'all') {
+        // Filter by status AND exclude archived orders (unless viewing archived)
+        const filterStatus = parseInt(currentFilter);
+        filteredOrders = orders.filter(order => order.status === filterStatus && !order.archived);
+        console.log('📊 Admin: After filter (' + currentFilter + '):', filteredOrders.length, 'orders');
+    } else {
+        // Show all non-archived orders
+        filteredOrders = orders.filter(order => !order.archived);
+        console.log('📊 Admin: Showing all non-archived orders:', filteredOrders.length);
+    }
+    
+    // Convert Firebase timestamps to dates for sorting
+    filteredOrders = filteredOrders.map(order => {
+        if (order.createdAt && order.createdAt.toDate) {
+            order.createdAt = order.createdAt.toDate().toISOString();
+        } else if (order.createdAt && typeof order.createdAt === 'object') {
+            // Firestore timestamp
+            order.createdAt = order.createdAt.seconds ? new Date(order.createdAt.seconds * 1000).toISOString() : order.createdAt;
+        }
+        return order;
+    });
+    
+    // Double-check filtered orders (after filter might have removed all)
+    if (!filteredOrders || !Array.isArray(filteredOrders) || filteredOrders.length === 0) {
+        console.log('📭 Admin: No orders after filtering');
+        container.innerHTML = '<div class="no-orders">No orders found' + (currentFilter !== 'all' ? ' with the selected filter' : '') + '. Orders will appear here when customers place orders.</div>';
         return;
     }
 
     // Sort orders by creation date (newest first)
-    const sortedOrders = orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const sortedOrders = filteredOrders.sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0);
+        const dateB = new Date(b.createdAt || 0);
+        return dateB - dateA;
+    });
 
     container.innerHTML = sortedOrders.map(order => createOrderCard(order)).join('');
+    
+    // Restore input values after re-rendering
+    Object.keys(inputValues).forEach(orderId => {
+        const input = document.getElementById(`invoiceAmount_${orderId}`);
+        if (input && !input.disabled) {
+            input.value = inputValues[orderId];
+            // Restore focus if this was the active element
+            if (document.activeElement && document.activeElement.id === `invoiceAmount_${orderId}`) {
+                setTimeout(() => input.focus(), 0);
+            }
+        }
+    });
     
     // Attach event listeners
     attachEventListeners();
@@ -144,6 +379,30 @@ function getStatusText(status) {
 function getAdminActions(order) {
     let html = '';
     
+    // Archive/Unarchive button (available for all orders, shown at the top)
+    if (order.archived) {
+        html += `
+            <div class="action-group" style="margin-bottom: 15px; padding: 15px; background: #f0f0f0; border-radius: 10px;">
+                <button class="admin-btn" onclick="unarchiveOrder('${order.orderId}')" style="background: linear-gradient(135deg, #17a2b8, #138496); width: 100%;">
+                    📤 Unarchive Order
+                </button>
+            </div>
+        `;
+    } else {
+        html += `
+            <div class="action-group" style="margin-bottom: 15px; padding: 15px; background: #f0f0f0; border-radius: 10px;">
+                <button class="admin-btn" onclick="archiveOrder('${order.orderId}')" style="background: linear-gradient(135deg, #6c757d, #5a6268); width: 100%;">
+                    📦 Archive Order
+                </button>
+            </div>
+        `;
+    }
+    
+    // If order is archived, don't show other actions (just archive button)
+    if (order.archived) {
+        return html;
+    }
+    
     // Show rejection reason if order is rejected
     if (order.status === 0) {
         html += `
@@ -235,8 +494,15 @@ function attachEventListeners() {
     // Event listeners are attached via onclick handlers in the HTML
 }
 
-function generateInvoice(orderId) {
-    const order = DB.getOrderById(orderId);
+async function generateInvoice(orderId) {
+    // If there's a pending update, apply it now before processing
+    if (window.pendingOrdersUpdate) {
+        console.log('📬 Admin: Applying pending orders update...');
+        displayOrders(window.pendingOrdersUpdate);
+        window.pendingOrdersUpdate = null;
+    }
+    
+    const order = await DB.getOrderById(orderId);
     if (!order) {
         if (typeof CustomModal !== 'undefined') {
             CustomModal.alert('Order not found');
@@ -290,7 +556,7 @@ function generateInvoice(orderId) {
                     button.textContent = 'Invoice Generated';
                 }
                 
-                const result = DB.updateOrderInvoice(orderId, amount);
+                const result = await DB.updateOrderInvoice(orderId, amount);
                 
                 if (result.success) {
                     // Send email to customer using Trawish Email Service
@@ -321,11 +587,11 @@ function generateInvoice(orderId) {
         if (typeof CustomModal !== 'undefined') {
             CustomModal.confirm(
                 `Generate invoice for ₹${amount}? Advance payment will be ₹${advanceAmount}.`,
-                () => {
+                async () => {
                     if (invoiceInput) invoiceInput.disabled = true;
                     if (button) button.disabled = true;
                     
-                    const result = DB.updateOrderInvoice(orderId, amount);
+                    const result = await DB.updateOrderInvoice(orderId, amount);
                     
                     if (result.success) {
                         if (typeof TrawishEmailService !== 'undefined') {
@@ -371,8 +637,8 @@ function generateInvoice(orderId) {
     }
 }
 
-function confirmAdvancePayment(orderId) {
-    const order = DB.getOrderById(orderId);
+async function confirmAdvancePayment(orderId) {
+    const order = await DB.getOrderById(orderId);
     if (!order) {
         if (typeof CustomModal !== 'undefined') {
             CustomModal.alert('Order not found');
@@ -386,7 +652,7 @@ function confirmAdvancePayment(orderId) {
         CustomModal.confirm(
             'Confirm that the advance payment has been verified and received?',
             async () => {
-                const result = DB.confirmAdvancePayment(orderId);
+                const result = await DB.confirmAdvancePayment(orderId);
                 
                 if (result.success) {
                     // Send email to customer using Trawish Email Service
@@ -410,8 +676,8 @@ function confirmAdvancePayment(orderId) {
         if (typeof CustomModal !== 'undefined') {
             CustomModal.confirm(
                 'Confirm that the advance payment has been verified and received?',
-                () => {
-                    const result = DB.confirmAdvancePayment(orderId);
+                async () => {
+                    const result = await DB.confirmAdvancePayment(orderId);
                     
                     if (result.success) {
                         if (typeof TrawishEmailService !== 'undefined') {
@@ -450,8 +716,8 @@ function confirmAdvancePayment(orderId) {
     }
 }
 
-function markOrderReady(orderId) {
-    const order = DB.getOrderById(orderId);
+async function markOrderReady(orderId) {
+    const order = await DB.getOrderById(orderId);
     if (!order) {
         if (typeof CustomModal !== 'undefined') {
             CustomModal.alert('Order not found');
@@ -465,7 +731,7 @@ function markOrderReady(orderId) {
         CustomModal.confirm(
             'Mark this order as ready for pickup?',
             async () => {
-                const result = DB.markOrderReady(orderId);
+                const result = await DB.markOrderReady(orderId);
                 
                 if (result.success) {
                     // Send email to customer using Trawish Email Service
@@ -487,8 +753,8 @@ function markOrderReady(orderId) {
         if (typeof CustomModal !== 'undefined') {
             CustomModal.confirm(
                 'Mark this order as ready for pickup?',
-                () => {
-                    const result = DB.markOrderReady(orderId);
+                async () => {
+                    const result = await DB.markOrderReady(orderId);
                     
                     if (result.success) {
                         if (typeof TrawishEmailService !== 'undefined') {
@@ -527,8 +793,8 @@ function markOrderReady(orderId) {
     }
 }
 
-function markOrderDelivered(orderId) {
-    const order = DB.getOrderById(orderId);
+async function markOrderDelivered(orderId) {
+    const order = await DB.getOrderById(orderId);
     if (!order) {
         if (typeof CustomModal !== 'undefined') {
             CustomModal.alert('Order not found');
@@ -542,7 +808,7 @@ function markOrderDelivered(orderId) {
         CustomModal.confirm(
             'Mark this order as delivered?',
             async () => {
-                const result = DB.markOrderDelivered(orderId);
+                const result = await DB.markOrderDelivered(orderId);
                 
                 if (result.success) {
                     // Send email to customer using Trawish Email Service
@@ -564,8 +830,8 @@ function markOrderDelivered(orderId) {
         if (typeof CustomModal !== 'undefined') {
             CustomModal.confirm(
                 'Mark this order as delivered?',
-                () => {
-                    const result = DB.markOrderDelivered(orderId);
+                async () => {
+                    const result = await DB.markOrderDelivered(orderId);
                     
                     if (result.success) {
                         if (typeof TrawishEmailService !== 'undefined') {
@@ -604,8 +870,102 @@ function markOrderDelivered(orderId) {
     }
 }
 
-function showRejectOrderModal(orderId) {
-    const order = DB.getOrderById(orderId);
+async function archiveOrder(orderId) {
+    const order = await DB.getOrderById(orderId);
+    if (!order) {
+        if (typeof CustomModal !== 'undefined') {
+            CustomModal.alert('Order not found');
+        } else {
+            alert('Order not found');
+        }
+        return;
+    }
+    
+    if (typeof CustomModal !== 'undefined') {
+        CustomModal.confirm(
+            'Archive this order? It will be hidden from the main view but can be accessed from the Archived section.',
+            async () => {
+                try {
+                    const result = await DB.updateOrderArchivedStatus(orderId, true);
+                    
+                    if (result.success) {
+                        CustomModal.alert('Order archived successfully!', () => {
+                            loadOrders();
+                        });
+                    } else {
+                        CustomModal.alert('Error archiving order: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Error archiving order:', error);
+                    CustomModal.alert('Error archiving order. Please try again.');
+                }
+            }
+        );
+    } else {
+        if (!confirm('Archive this order? It will be hidden from the main view but can be accessed from the Archived section.')) {
+            return;
+        }
+        
+        const result = await DB.updateOrderArchivedStatus(orderId, true);
+        
+        if (result.success) {
+            alert('Order archived successfully!');
+            loadOrders();
+        } else {
+            alert('Error archiving order: ' + result.message);
+        }
+    }
+}
+
+async function unarchiveOrder(orderId) {
+    const order = await DB.getOrderById(orderId);
+    if (!order) {
+        if (typeof CustomModal !== 'undefined') {
+            CustomModal.alert('Order not found');
+        } else {
+            alert('Order not found');
+        }
+        return;
+    }
+    
+    if (typeof CustomModal !== 'undefined') {
+        CustomModal.confirm(
+            'Unarchive this order? It will be visible in the main view again.',
+            async () => {
+                try {
+                    const result = await DB.updateOrderArchivedStatus(orderId, false);
+                    
+                    if (result.success) {
+                        CustomModal.alert('Order unarchived successfully!', () => {
+                            loadOrders();
+                        });
+                    } else {
+                        CustomModal.alert('Error unarchiving order: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Error unarchiving order:', error);
+                    CustomModal.alert('Error unarchiving order. Please try again.');
+                }
+            }
+        );
+    } else {
+        if (!confirm('Unarchive this order? It will be visible in the main view again.')) {
+            return;
+        }
+        
+        const result = await DB.updateOrderArchivedStatus(orderId, false);
+        
+        if (result.success) {
+            alert('Order unarchived successfully!');
+            loadOrders();
+        } else {
+            alert('Error unarchiving order: ' + result.message);
+        }
+    }
+}
+
+async function showRejectOrderModal(orderId) {
+    const order = await DB.getOrderById(orderId);
     if (!order) {
         if (typeof CustomModal !== 'undefined') {
             CustomModal.alert('Order not found');
@@ -672,7 +1032,7 @@ function showRejectOrderModal(orderId) {
             return;
         }
         
-        const result = DB.rejectOrder(orderId, reason);
+        const result = await DB.rejectOrder(orderId, reason);
         if (result.success) {
             // Send rejection email
             if (typeof TrawishEmailService !== 'undefined') {
@@ -703,8 +1063,8 @@ function showRejectOrderModal(orderId) {
 }
 
 // Load and display ratings
-function loadRatings() {
-    const ratings = DB.getRatings();
+async function loadRatings() {
+    const ratings = await DB.getRatings();
     const container = document.getElementById('ratingsContainer');
     
     if (!container) return;
@@ -715,10 +1075,24 @@ function loadRatings() {
     }
     
     // Sort by most recent first
-    const sortedRatings = ratings.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+    const sortedRatings = ratings.map(rating => {
+        // Convert Firestore timestamp if needed
+        if (rating.submittedAt && rating.submittedAt.toDate) {
+            rating.submittedAt = rating.submittedAt.toDate().toISOString();
+        } else if (rating.submittedAt && typeof rating.submittedAt === 'object') {
+            rating.submittedAt = rating.submittedAt.seconds ? new Date(rating.submittedAt.seconds * 1000).toISOString() : rating.submittedAt;
+        }
+        return rating;
+    }).sort((a, b) => new Date(b.submittedAt || 0) - new Date(a.submittedAt || 0));
     
     // Calculate average rating
-    const avgRating = DB.getAverageRating();
+    const avgRating = await DB.getAverageRating();
+    
+    // Get order data for each rating (non-blocking)
+    const ratingCards = await Promise.all(sortedRatings.map(async rating => {
+        const order = await DB.getOrderById(rating.orderId);
+        return createRatingCard(rating, order);
+    }));
     
     container.innerHTML = `
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
@@ -728,13 +1102,12 @@ function loadRatings() {
             <p style="margin: 10px 0 0 0; opacity: 0.9;">Based on ${ratings.length} ${ratings.length === 1 ? 'rating' : 'ratings'}</p>
         </div>
         <div style="display: grid; gap: 20px;">
-            ${sortedRatings.map(rating => createRatingCard(rating)).join('')}
+            ${ratingCards.join('')}
         </div>
     `;
 }
 
-function createRatingCard(rating) {
-    const order = DB.getOrderById(rating.orderId);
+function createRatingCard(rating, order = null) {
     const date = new Date(rating.submittedAt).toLocaleDateString('en-US', { 
         year: 'numeric', 
         month: 'long', 

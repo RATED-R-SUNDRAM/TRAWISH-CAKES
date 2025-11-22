@@ -680,16 +680,52 @@ const TrawishEmailService = {
                 return { success: false, message: 'EmailJS library not loaded' };
             }
             
+            // Initialize if not already initialized
+            if (!this.isInitialized) {
+                console.log('🔄 Initializing EmailJS for password reset...');
+                const initResult = this.init();
+                if (!initResult) {
+                    console.error('❌ Failed to initialize EmailJS');
+                    return { success: false, message: 'Email service initialization failed' };
+                }
+            }
+            
             if (this.isInitialized) {
-                await emailjsLib.send(
-                    this.config.serviceId,
-                    this.config.templateId,
-                    emailData
-                );
-                console.log('Password reset email sent successfully');
-                return { success: true };
+                // EmailJS template expects: subject, email (to_email), message
+                // Match the pattern used in sendOrderNotification
+                const emailDataForSend = {
+                    subject: emailData.subject,
+                    email: email, // This is the 'to_email' field for EmailJS template
+                    message: emailData.message,
+                    to_name: username,
+                    reset_link: resetLink
+                };
+                
+                console.log('📧 Sending password reset email to:', email);
+                console.log('📧 Using service:', this.config.serviceId);
+                console.log('📧 Using template:', this.config.templateId);
+                
+                try {
+                    const response = await emailjsLib.send(
+                        this.config.serviceId,
+                        this.config.templateId,
+                        emailDataForSend
+                    );
+                    console.log('✅ Password reset email sent successfully!', response);
+                    console.log('✅ Response status:', response.status);
+                    console.log('✅ Response text:', response.text);
+                    return { success: true };
+                } catch (sendError) {
+                    console.error('❌ Error sending password reset email:', sendError);
+                    console.error('❌ Error details:', {
+                        status: sendError.status,
+                        text: sendError.text,
+                        message: sendError.message
+                    });
+                    return { success: false, message: sendError.text || sendError.message || 'Failed to send email' };
+                }
             } else {
-                console.log('EmailJS not initialized, password reset email skipped');
+                console.error('❌ EmailJS not initialized, password reset email skipped');
                 return { success: false, message: 'Email service not initialized' };
             }
         } catch (error) {

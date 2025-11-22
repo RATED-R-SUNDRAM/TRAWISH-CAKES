@@ -28,6 +28,9 @@ let currentGalleryIndex = 0;
 let galleryImages = [];
 let backgroundCakeImages = [];
 
+// Real-time listener unsubscribe functions
+let userOrdersUnsubscribe = null; // For user orders listener
+
 // DOM Elements - Will be initialized after DOM loads
 let cakeAnimation, orderButton, orderModal, modalClose, cancelOrder, orderForm;
 let successMessage, galleryImagesContainer, galleryIndicators;
@@ -411,7 +414,23 @@ function checkAuthentication() {
         return;
     }
     
-    const user = Auth.isLoggedIn();
+    // Check sessionStorage directly as well for immediate feedback
+    let user = Auth.isLoggedIn();
+    
+    // If Auth.isLoggedIn() returns null but sessionStorage has data, restore it
+    if (!user) {
+        const storedUser = sessionStorage.getItem('trawish_current_user');
+        if (storedUser) {
+            try {
+                user = JSON.parse(storedUser);
+                Auth.currentUser = user;
+                console.log('✅ User restored from sessionStorage');
+            } catch (e) {
+                console.error('Error restoring user:', e);
+            }
+        }
+    }
+    
     const loginLink = document.getElementById('loginLink');
     const logoutLink = document.getElementById('logoutLink');
     const accountsLink = document.getElementById('accountsLink');
@@ -421,11 +440,16 @@ function checkAuthentication() {
         if (logoutLink) {
             logoutLink.style.display = 'block';
             // Remove existing listeners to avoid duplicates
-            const newLogout = logoutLink.cloneNode(true);
-            logoutLink.parentNode.replaceChild(newLogout, logoutLink);
+            const existingLogout = document.getElementById('logoutLink');
+            if (existingLogout) {
+                const newLogout = existingLogout.cloneNode(true);
+                existingLogout.parentNode.replaceChild(newLogout, existingLogout);
+            }
             document.getElementById('logoutLink').addEventListener('click', (e) => {
                 e.preventDefault();
-                if (typeof Auth !== 'undefined') Auth.logout();
+                if (typeof Auth !== 'undefined') {
+                    Auth.logout();
+                }
             });
         }
         if (accountsLink) accountsLink.style.display = 'block';
@@ -434,8 +458,11 @@ function checkAuthentication() {
     } else {
         if (loginLink) {
             loginLink.style.display = 'block';
-            const newLogin = loginLink.cloneNode(true);
-            loginLink.parentNode.replaceChild(newLogin, loginLink);
+            const existingLogin = document.getElementById('loginLink');
+            if (existingLogin) {
+                const newLogin = existingLogin.cloneNode(true);
+                existingLogin.parentNode.replaceChild(newLogin, existingLogin);
+            }
             document.getElementById('loginLink').addEventListener('click', (e) => {
                 e.preventDefault();
                 window.location.href = 'login.html';
@@ -451,7 +478,23 @@ function setupEventListeners() {
     // Order button - check if user is logged in
     if (orderButton) {
         orderButton.addEventListener('click', () => {
-            const user = Auth ? Auth.isLoggedIn() : null;
+            // Check authentication with retry logic
+            let user = Auth ? Auth.isLoggedIn() : null;
+            
+            // Double-check sessionStorage if Auth.isLoggedIn() returns null
+            if (!user) {
+                const storedUser = sessionStorage.getItem('trawish_current_user');
+                if (storedUser) {
+                    try {
+                        user = JSON.parse(storedUser);
+                        Auth.currentUser = user;
+                        console.log('✅ User session restored for order button');
+                    } catch (e) {
+                        console.error('Error parsing stored user:', e);
+                    }
+                }
+            }
+            
             if (!user) {
                 if (typeof CustomModal !== 'undefined') {
                     CustomModal.confirm(
@@ -468,6 +511,8 @@ function setupEventListeners() {
                 }
                 return;
             }
+            
+            // User is logged in - open order modal
             orderModal.classList.add('show');
             document.body.style.overflow = 'hidden';
         });
@@ -523,7 +568,10 @@ function closeModal() {
     if (!orderModal) return;
     orderModal.classList.remove('show');
     document.body.style.overflow = 'auto';
-    if (orderForm) orderForm.reset();
+    if (orderForm) {
+        orderForm.reset();
+        removeImagePreview(); // Clear image preview when modal closes
+    }
 }
 
 // Handle order form submission
@@ -574,6 +622,12 @@ async function handleOrderSubmit(e) {
     // Generate order ID with order data
     orderData.orderId = generateOrderId(orderData);
     
+    // Ensure userId is a string for consistency with Firebase
+    orderData.userId = String(user.id);
+    
+    console.log('📦 Preparing to create order:', orderData);
+    console.log('👤 User ID:', user.id, '(type:', typeof user.id, ')');
+    
     // Show loading state
     const submitButton = orderForm.querySelector('button[type="submit"]');
     const originalText = submitButton.innerHTML;
@@ -610,9 +664,21 @@ async function handleOrderSubmit(e) {
         
         // Save order to database (only if user proceeded)
         if (DB) {
-            const savedOrder = DB.createOrder(orderData);
-            console.log('Order saved:', savedOrder);
-            console.log('Order userId:', savedOrder.userId, 'Current user id:', user.id);
+            console.log('💾 Saving order to Firebase...');
+            const savedOrder = await DB.createOrder(orderData);
+            if (savedOrder) {
+                console.log('✅ Order saved successfully to Firebase!');
+                console.log('📦 Order ID:', savedOrder.id || savedOrder.orderId);
+                console.log('👤 Order userId:', savedOrder.userId);
+                console.log('👤 Current user id:', user.id);
+                console.log('📋 Full order data:', savedOrder);
+            } else {
+                console.error('❌ Failed to save order - DB.createOrder returned null');
+                throw new Error('Failed to save order to database. Please try again.');
+            }
+        } else {
+            console.error('❌ DB is not available');
+            throw new Error('Database not available. Please refresh the page and try again.');
         }
         
         // Send email using EmailJS
@@ -621,13 +687,40 @@ async function handleOrderSubmit(e) {
         closeModal();
         showSuccessMessage();
         
-        // Reset form
+        // Reset form and clear image preview
         orderForm.reset();
+        removeImagePreview(); // Clear image preview
         
         // Force reload user orders after a short delay to ensure DB is updated
+        // Also manually trigger a refresh to ensure the listener picks up the new order
+        console.log('🔄 Will reload user orders in 1 second...');
+        
         setTimeout(() => {
-            console.log('Reloading user orders after order creation...');
+            console.log('🔄 Reloading user orders after order creation...');
+            console.log('👤 Current user:', user);
+            console.log('👤 User ID:', user.id, '(type:', typeof user.id, ')');
+            
+            // Unsubscribe current listener
+            if (userOrdersUnsubscribe) {
+                console.log('🔄 Unsubscribing old listener...');
+                userOrdersUnsubscribe();
+                userOrdersUnsubscribe = null;
+            }
+            
+            // Reload orders (this will set up a new listener)
             loadUserOrders();
+            
+            // Also manually fetch once to ensure we get the order
+            setTimeout(async () => {
+                console.log('🔄 Manual fetch of user orders...');
+                if (DB && DB.getOrdersByUserId) {
+                    const orders = await DB.getOrdersByUserId(String(user.id));
+                    console.log('📋 Manually fetched orders:', orders.length);
+                    if (orders.length > 0) {
+                        displayUserOrders(orders);
+                    }
+                }
+            }, 500);
             
             // Show accounts section if hidden and scroll to it
             const accountsSection = document.getElementById('accounts');
@@ -646,9 +739,9 @@ async function handleOrderSubmit(e) {
     } catch (error) {
         console.error('Error sending order:', error);
         if (typeof CustomModal !== 'undefined') {
-            CustomModal.alert('There was an error submitting your order. Please try again or contact us directly at ss6437p@gmail.com');
+            CustomModal.alert('There was an error submitting your order. Please try again or contact us directly at trawishcakes@gmail.com');
         } else {
-            alert('There was an error submitting your order. Please try again or contact us directly at ss6437p@gmail.com');
+            alert('There was an error submitting your order. Please try again or contact us directly at trawishcakes@gmail.com');
         }
     } finally {
         submitButton.innerHTML = originalText;
@@ -829,11 +922,12 @@ function refreshGallery() {
 // Start auto-refresh
 setTimeout(refreshGallery, 60000);
 
-// Load user orders for accounts section
-function loadUserOrders() {
+// Load user orders for accounts section (with real-time updates from Firebase)
+async function loadUserOrders() {
     // Check if Auth and DB are available
     if (typeof Auth === 'undefined' || typeof DB === 'undefined') {
         console.log('Auth or DB not loaded yet');
+        setTimeout(() => loadUserOrders(), 200);
         return;
     }
     
@@ -854,42 +948,59 @@ function loadUserOrders() {
     }
     
     try {
-        // Get all orders for debugging
-        const allOrders = DB.getOrders();
-        console.log('All orders in database:', allOrders.length);
-        console.log('Current user ID:', user.id, 'Type:', typeof user.id);
-        console.log('All user IDs in orders:', allOrders.map(o => ({ id: o.userId, type: typeof o.userId, orderId: o.orderId, email: o.customerEmail })));
-        
-        let orders = DB.getOrdersByUserId(user.id);
-        console.log('Orders found for user by ID:', orders.length, orders);
-        
-        // If no orders found, try matching by email as fallback (in case userId mismatch)
-        if (orders.length === 0 && user.email) {
-            console.log('No orders found by userId, trying email match:', user.email);
-            const ordersByEmail = allOrders.filter(o => o.customerEmail && o.customerEmail.toLowerCase() === user.email.toLowerCase());
-            console.log('Orders found by email:', ordersByEmail.length);
-            if (ordersByEmail.length > 0) {
-                // Update these orders with correct userId
-                ordersByEmail.forEach(order => {
-                    DB.updateOrderStatus(order.orderId, order.status, { userId: user.id });
-                });
-                // Reload orders
-                orders = DB.getOrdersByUserId(user.id);
-                console.log('Orders after email match update:', orders.length);
+        // Set up real-time listener for user orders (updates automatically when status changes)
+        if (DB && DB.onUserOrdersUpdate && isFirebaseAvailable()) {
+            // Unsubscribe previous listener if exists
+            if (userOrdersUnsubscribe) {
+                userOrdersUnsubscribe();
             }
+            
+            // Set up real-time listener - orders update automatically when admin changes status
+            console.log('👂 Setting up real-time listener for user orders...');
+            console.log('👤 User ID for listener:', user.id);
+            userOrdersUnsubscribe = DB.onUserOrdersUpdate(String(user.id), (orders) => {
+                console.log('📬 Real-time update: Received', orders.length, 'orders');
+                displayUserOrders(orders);
+            });
+        } else {
+            // Fallback: Load once
+            const orders = await DB.getOrdersByUserId(user.id);
+            displayUserOrders(orders);
         }
-        
-        if (orders.length === 0) {
-            ordersList.innerHTML = '<p class="no-orders">You don\'t have any orders yet. <a href="#home" class="order-link" onclick="event.preventDefault(); document.getElementById(\'orderButton\')?.click();">Click here to place your first order</a>! 🎂</p>';
-            return;
-        }
-        
-        ordersList.innerHTML = orders.map(order => createOrderCardHTML(order)).join('');
-        console.log('Orders displayed successfully');
     } catch (error) {
         console.error('Error loading user orders:', error);
         ordersList.innerHTML = '<p class="no-orders">Error loading orders. Please refresh the page.</p>';
     }
+}
+
+function displayUserOrders(orders) {
+    const ordersList = document.getElementById('ordersList');
+    if (!ordersList) return;
+    
+    // Convert Firebase timestamps to dates
+    orders = orders.map(order => {
+        if (order.createdAt && order.createdAt.toDate) {
+            order.createdAt = order.createdAt.toDate().toISOString();
+        } else if (order.createdAt && typeof order.createdAt === 'object') {
+            order.createdAt = order.createdAt.seconds ? new Date(order.createdAt.seconds * 1000).toISOString() : order.createdAt;
+        }
+        return order;
+    });
+    
+    if (orders.length === 0) {
+        ordersList.innerHTML = '<p class="no-orders">You don\'t have any orders yet. <a href="#home" class="order-link" onclick="event.preventDefault(); document.getElementById(\'orderButton\')?.click();">Click here to place your first order</a>! 🎂</p>';
+        return;
+    }
+    
+    // Sort by newest first
+    orders.sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0);
+        const dateB = new Date(b.createdAt || 0);
+        return dateB - dateA;
+    });
+    
+    ordersList.innerHTML = orders.map(order => createOrderCardHTML(order)).join('');
+    console.log('Orders displayed successfully:', orders.length);
 }
 
 // Create order card HTML for accounts section
@@ -936,7 +1047,7 @@ function createOrderCardHTML(order) {
                 <div class="rejection-notice" style="background: #ffe5e5; border-left: 4px solid #dc3545; padding: 20px; border-radius: 10px; margin-top: 20px;">
                     <strong style="color: #dc3545; display: block; margin-bottom: 10px; font-size: 1.1rem;">❌ Order Rejected</strong>
                     <p style="color: #721c24; margin: 0;"><strong>Reason:</strong> ${order.rejectionReason || 'No reason provided'}</p>
-                    <p style="color: #721c24; margin-top: 10px; font-size: 0.9rem;">If you have any questions, please contact us at ss6437p@gmail.com</p>
+                    <p style="color: #721c24; margin-top: 10px; font-size: 0.9rem;">If you have any questions, please contact us at trawishcakes@gmail.com</p>
                 </div>
             ` : `
                 <div class="order-status-timeline">
@@ -1011,7 +1122,7 @@ function createOrderStatusTimeline(currentStatus) {
     `;
 }
 
-function uploadPaymentProof(orderId, input) {
+async function uploadPaymentProof(orderId, input) {
     const file = input.files[0];
     if (!file) return;
     
@@ -1025,16 +1136,24 @@ function uploadPaymentProof(orderId, input) {
     }
     
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
         const imageData = e.target.result;
-        DB.uploadPaymentProof(orderId, imageData);
-        if (typeof CustomModal !== 'undefined') {
-            CustomModal.alert('Payment proof uploaded successfully! We will verify and confirm your payment soon.', () => {
+        const result = await DB.uploadPaymentProof(orderId, imageData);
+        if (result && result.success) {
+            if (typeof CustomModal !== 'undefined') {
+                CustomModal.alert('Payment proof uploaded successfully! We will verify and confirm your payment soon.', () => {
+                    loadUserOrders();
+                });
+            } else {
+                alert('Payment proof uploaded successfully! We will verify and confirm your payment soon.');
                 loadUserOrders();
-            });
+            }
         } else {
-            alert('Payment proof uploaded successfully! We will verify and confirm your payment soon.');
-            loadUserOrders();
+            if (typeof CustomModal !== 'undefined') {
+                CustomModal.alert('Error uploading payment proof. Please try again.');
+            } else {
+                alert('Error uploading payment proof. Please try again.');
+            }
         }
     };
     reader.readAsDataURL(file);
@@ -1057,7 +1176,7 @@ function setRating(orderId, rating) {
     });
 }
 
-function submitRating(orderId) {
+async function submitRating(orderId) {
     // Get rating from the clicked stars
     const ratingCard = document.querySelector(`[data-order-id="${orderId}"]`);
     if (!ratingCard) {
@@ -1082,9 +1201,9 @@ function submitRating(orderId) {
     
     const rating = parseInt(selectedStar.getAttribute('data-rating'));
     const comment = document.getElementById(`ratingComment_${orderId}`)?.value || '';
-    const result = DB.submitRating(orderId, rating, comment);
+    const result = await DB.submitRating(orderId, rating, comment);
     
-    if (result.success) {
+    if (result && result.success) {
         if (typeof CustomModal !== 'undefined') {
             CustomModal.alert('Thank you for your rating! 💝', () => {
                 loadUserOrders();
@@ -1099,9 +1218,9 @@ function submitRating(orderId) {
         }
     } else {
         if (typeof CustomModal !== 'undefined') {
-            CustomModal.alert('Error submitting rating: ' + result.message);
+            CustomModal.alert('Error submitting rating: ' + (result ? result.message : 'Unknown error'));
         } else {
-            alert('Error submitting rating: ' + result.message);
+            alert('Error submitting rating: ' + (result ? result.message : 'Unknown error'));
         }
     }
 }

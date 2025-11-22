@@ -10,6 +10,10 @@
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="emailjs-wrapper.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <style>
         .admin-container {
             min-height: 100vh;
@@ -259,6 +263,7 @@
                 <button class="filter-btn" data-status="4" onclick="filterOrders(4)">Ready</button>
                 <button class="filter-btn" data-status="5" onclick="filterOrders(5)">Delivered</button>
                 <button class="filter-btn" data-status="0" onclick="filterOrders(0)">Rejected</button>
+                <button class="filter-btn" data-status="archived" onclick="filterOrders('archived')">📦 Archived</button>
             </div>
         </div>
 
@@ -275,10 +280,56 @@
         </div>
     </div>
 
+    <script src="firebase-config.js"></script>
     <script src="database.js"></script>
     <script src="auth.js"></script>
     <script src="email-service.js"></script>
     <script src="modal.js"></script>
+    <script>
+        // Protect admin page - redirect if not logged in as admin
+        function checkAdminAccess() {
+            // Wait for Firebase and Auth to initialize
+            if (typeof Auth === 'undefined' || typeof DB === 'undefined') {
+                // Retry after a short delay
+                setTimeout(checkAdminAccess, 200);
+                return;
+            }
+            
+            // Check if user is logged in
+            const user = Auth.isLoggedIn();
+            console.log('Admin page - Current user:', user);
+            
+            if (!user) {
+                // Not logged in - redirect to login
+                console.log('No user found, redirecting to login');
+                window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.href);
+                return;
+            }
+            
+            if (!user.isAdmin) {
+                // User is logged in but not admin - redirect to login
+                console.log('User is not admin, redirecting to login');
+                window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.href);
+                return;
+            }
+            
+            // User is admin - allow access
+            console.log('✅ Admin access granted for:', user.username);
+        }
+        
+        // Check on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Wait a bit longer for everything to initialize
+            setTimeout(checkAdminAccess, 1000);
+        });
+        
+        // Also check when page becomes visible (in case of tab switching)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                setTimeout(checkAdminAccess, 300);
+            }
+        });
+    </script>
     <script src="admin.js"></script>
 </body>
 </html>

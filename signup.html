@@ -9,6 +9,10 @@
     <link rel="apple-touch-icon" href="LOGO/Screenshot 2025-11-14 232336.png">
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <style>
         .auth-container {
             min-height: 100vh;
@@ -220,6 +224,7 @@
         </div>
     </div>
 
+    <script src="firebase-config.js"></script>
     <script src="database.js"></script>
     <script src="modal.js"></script>
     <script src="auth.js"></script>
@@ -250,8 +255,9 @@
             }, 3000);
         }
         
-        // Ensure DB is initialized
+        // Handle signup form submission
         document.addEventListener('DOMContentLoaded', function() {
+            // Ensure DB is initialized
             if (typeof DB === 'undefined') {
                 console.error('Database not loaded!');
                 if (typeof CustomModal !== 'undefined') {
@@ -265,6 +271,68 @@
             // Initialize database
             if (DB && DB.init) {
                 DB.init();
+            }
+            
+            // Handle signup form
+            const signupForm = document.getElementById('signupForm');
+            if (signupForm) {
+                signupForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    if (typeof Auth === 'undefined' || typeof DB === 'undefined') {
+                        if (typeof CustomModal !== 'undefined') {
+                            CustomModal.alert('Error: Authentication system not loaded. Please refresh the page.');
+                        } else {
+                            alert('Error: Authentication system not loaded. Please refresh the page.');
+                        }
+                        return;
+                    }
+                    
+                    const formData = new FormData(e.target);
+                    const errorMessage = document.getElementById('errorMessage');
+                    
+                    const username = formData.get('username').trim();
+                    const email = formData.get('email').trim();
+                    const password = formData.get('password');
+                    const confirmPassword = formData.get('confirmPassword');
+
+                    if (!username || !email || !password || !confirmPassword) {
+                        errorMessage.textContent = 'Please fill in all fields';
+                        errorMessage.style.display = 'block';
+                        return;
+                    }
+
+                    try {
+                        const result = await Auth.register({
+                            username: username,
+                            email: email,
+                            password: password,
+                            confirmPassword: confirmPassword
+                        });
+
+                        if (result.success) {
+                            // Show success message
+                            if (typeof showSuccessMessage === 'function') {
+                                showSuccessMessage('🎉 Account created successfully! Redirecting...');
+                            } else if (typeof CustomModal !== 'undefined') {
+                                CustomModal.alert('🎉 Account created successfully! Redirecting...');
+                            } else {
+                                alert('🎉 Account created successfully! Redirecting...');
+                            }
+                            
+                            setTimeout(function() {
+                                window.location.href = 'index.html';
+                            }, 1000);
+                        } else {
+                            errorMessage.textContent = result.message;
+                            errorMessage.style.display = 'block';
+                        }
+                    } catch (error) {
+                        console.error('Signup error:', error);
+                        errorMessage.textContent = 'An error occurred. Please try again.';
+                        errorMessage.style.display = 'block';
+                    }
+                });
             }
         });
     </script>

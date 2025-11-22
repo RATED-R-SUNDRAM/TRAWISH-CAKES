@@ -6,6 +6,10 @@
     <title>Login - Trawish Cakes</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <style>
         .auth-container {
             min-height: 100vh;
@@ -208,6 +212,7 @@
         </div>
     </div>
 
+    <script src="firebase-config.js"></script>
     <script src="database.js"></script>
     <script src="auth.js"></script>
     <script>
@@ -237,8 +242,9 @@
             }, 3000);
         }
         
-        // Ensure DB is initialized
+        // Handle login form submission
         document.addEventListener('DOMContentLoaded', function() {
+            // Ensure DB is initialized
             if (typeof DB === 'undefined') {
                 console.error('Database not loaded!');
                 alert('Error: Database not loaded. Please refresh the page.');
@@ -248,6 +254,73 @@
             // Initialize database
             if (DB && DB.init) {
                 DB.init();
+            }
+            
+            // Handle login form
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    if (typeof Auth === 'undefined' || typeof DB === 'undefined') {
+                        if (typeof CustomModal !== 'undefined') {
+                            CustomModal.alert('Error: Authentication system not loaded. Please refresh the page.');
+                        } else {
+                            alert('Error: Authentication system not loaded. Please refresh the page.');
+                        }
+                        return;
+                    }
+                    
+                    const username = document.getElementById('username').value.trim();
+                    const password = document.getElementById('password').value;
+                    const errorMessage = document.getElementById('errorMessage');
+
+                    if (!username || !password) {
+                        errorMessage.textContent = 'Please fill in all fields';
+                        errorMessage.style.display = 'block';
+                        return;
+                    }
+
+                    try {
+                        const result = await Auth.login(username, password);
+                        
+                        if (result.success) {
+                            // Show success message
+                            if (typeof showSuccessMessage === 'function') {
+                                showSuccessMessage('🎉 Login successful! Redirecting...');
+                            } else if (typeof CustomModal !== 'undefined') {
+                                CustomModal.alert('🎉 Login successful! Redirecting...');
+                            } else {
+                                alert('🎉 Login successful! Redirecting...');
+                            }
+                            
+                            // Redirect based on user type
+                            setTimeout(function() {
+                                const user = result.user;
+                                const redirect = new URLSearchParams(window.location.search).get('redirect');
+                                
+                                // If admin user, redirect to admin dashboard
+                                if (user && user.isAdmin && user.username === 'kajal_tonu') {
+                                    if (redirect && redirect.includes('admin.html')) {
+                                        window.location.href = redirect;
+                                    } else {
+                                        window.location.href = 'admin.html';
+                                    }
+                                } else {
+                                    // Regular user - redirect to specified page or home
+                                    window.location.href = redirect || 'index.html';
+                                }
+                            }, 1000);
+                        } else {
+                            errorMessage.textContent = result.message;
+                            errorMessage.style.display = 'block';
+                        }
+                    } catch (error) {
+                        console.error('Login error:', error);
+                        errorMessage.textContent = 'An error occurred. Please try again.';
+                        errorMessage.style.display = 'block';
+                    }
+                });
             }
         });
     </script>
