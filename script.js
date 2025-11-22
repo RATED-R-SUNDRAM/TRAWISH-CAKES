@@ -118,6 +118,46 @@ function setupPhoneNumberFormatting() {
     }
 }
 
+// Compress image to reduce file size (especially for mobile uploads)
+function compressImage(file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                // Calculate new dimensions
+                let width = img.width;
+                let height = img.height;
+                
+                if (width > maxWidth || height > maxHeight) {
+                    if (width > height) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    } else {
+                        width = (width * maxHeight) / height;
+                        height = maxHeight;
+                    }
+                }
+                
+                // Create canvas and compress
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Convert to base64 with compression
+                const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                resolve(compressedDataUrl);
+            };
+            img.onerror = reject;
+            img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
 // Setup image preview for sample image upload
 function setupImagePreview() {
     const imageInput = document.getElementById('sampleImage');
@@ -125,25 +165,34 @@ function setupImagePreview() {
     const previewImg = document.getElementById('previewImg');
     
     if (imageInput && previewDiv && previewImg) {
-        imageInput.addEventListener('change', function(e) {
+        imageInput.addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (file) {
-                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                // Check file size (10MB limit before compression)
+                if (file.size > 10 * 1024 * 1024) {
                     if (typeof CustomModal !== 'undefined') {
-                        CustomModal.alert('Image size should be less than 5MB');
+                        CustomModal.alert('Image size should be less than 10MB. Please choose a smaller image.');
                     } else {
-                        alert('Image size should be less than 5MB');
+                        alert('Image size should be less than 10MB. Please choose a smaller image.');
                     }
                     imageInput.value = '';
                     return;
                 }
                 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImg.src = e.target.result;
+                try {
+                    // Compress image for preview and upload
+                    const compressedDataUrl = await compressImage(file, 1200, 1200, 0.7);
+                    previewImg.src = compressedDataUrl;
                     previewDiv.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
+                } catch (error) {
+                    console.error('Error processing image:', error);
+                    if (typeof CustomModal !== 'undefined') {
+                        CustomModal.alert('Error processing image. Please try a different image.');
+                    } else {
+                        alert('Error processing image. Please try a different image.');
+                    }
+                    imageInput.value = '';
+                }
             }
         });
     }
@@ -593,16 +642,27 @@ async function handleOrderSubmit(e) {
     
     const formData = new FormData(orderForm);
     
-    // Handle sample image upload
+    // Handle sample image upload with compression
     let sampleImageData = null;
     const sampleImageFile = formData.get('sampleImage');
     if (sampleImageFile && sampleImageFile.size > 0) {
-        sampleImageData = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target.result);
-            reader.onerror = () => resolve(null);
-            reader.readAsDataURL(sampleImageFile);
-        });
+        try {
+            // Compress image to reduce size (max 1200px, quality 0.7)
+            // This ensures images are small enough for Firebase and mobile devices
+            sampleImageData = await compressImage(sampleImageFile, 1200, 1200, 0.7);
+            console.log('✅ Image compressed successfully');
+            console.log('📏 Original size:', (sampleImageFile.size / 1024).toFixed(2), 'KB');
+            console.log('📏 Compressed size:', (sampleImageData.length * 3 / 4 / 1024).toFixed(2), 'KB (base64)');
+        } catch (error) {
+            console.error('❌ Error compressing image:', error);
+            // Fallback to original if compression fails
+            sampleImageData = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = () => resolve(null);
+                reader.readAsDataURL(sampleImageFile);
+            });
+        }
     }
     
     const orderData = {
@@ -1135,9 +1195,23 @@ async function uploadPaymentProof(orderId, input) {
         return;
     }
     
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-        const imageData = e.target.result;
+    // Check file size (10MB limit before compression)
+    if (file.size > 10 * 1024 * 1024) {
+        if (typeof CustomModal !== 'undefined') {
+            CustomModal.alert('Image size should be less than 10MB. Please choose a smaller image.');
+        } else {
+            alert('Image size should be less than 10MB. Please choose a smaller image.');
+        }
+        return;
+    }
+    
+    try {
+        // Compress image before uploading (max 1200px, quality 0.7)
+        const imageData = await compressImage(file, 1200, 1200, 0.7);
+        console.log('✅ Payment proof compressed successfully');
+        console.log('📏 Original size:', (file.size / 1024).toFixed(2), 'KB');
+        console.log('📏 Compressed size:', (imageData.length * 3 / 4 / 1024).toFixed(2), 'KB (base64)');
+        
         const result = await DB.uploadPaymentProof(orderId, imageData);
         if (result && result.success) {
             if (typeof CustomModal !== 'undefined') {
@@ -1155,8 +1229,14 @@ async function uploadPaymentProof(orderId, input) {
                 alert('Error uploading payment proof. Please try again.');
             }
         }
-    };
-    reader.readAsDataURL(file);
+    } catch (error) {
+        console.error('❌ Error processing payment proof:', error);
+        if (typeof CustomModal !== 'undefined') {
+            CustomModal.alert('Error processing image. Please try a different image.');
+        } else {
+            alert('Error processing image. Please try a different image.');
+        }
+    }
 }
 
 // Rating functions
