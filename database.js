@@ -516,8 +516,16 @@ const DB = {
                 return { success: false, message: 'Order not found' };
             }
 
+            // Ensure rating is a number between 1-5
+            const ratingNum = parseInt(rating);
+            if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+                return { success: false, message: 'Invalid rating. Please select a rating between 1-5 stars.' };
+            }
+            
+            console.log('💾 Saving rating to database:', ratingNum, 'for order:', orderId);
+            
             await db.collection('orders').doc(orderDoc.id).update({
-                rating: rating,
+                rating: ratingNum, // Store as number
                 ratingComment: comment || '',
                 ratingSubmittedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -528,7 +536,7 @@ const DB = {
                 orderId: orderId,
                 customerName: orderDoc.customerName,
                 customerEmail: orderDoc.customerEmail,
-                rating: rating,
+                rating: ratingNum, // Store as number
                 comment: comment || '',
                 submittedAt: firebase.firestore.FieldValue.serverTimestamp()
             });

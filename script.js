@@ -1992,13 +1992,20 @@ function setupCookieFieldHandlers() {
 }
 
 // Rating functions
-let currentRating = 0;
+let currentRating = {};
+let selectedRating = {};
 
 function setRating(orderId, rating) {
-    currentRating = rating;
+    // Store rating per order
+    selectedRating[orderId] = rating;
+    currentRating[orderId] = rating;
+    
+    console.log('⭐ Rating set for order', orderId, ':', rating);
+    
     const stars = document.querySelectorAll(`[data-order-id="${orderId}"] .star-rating`);
     stars.forEach((star, index) => {
-        if (index < rating) {
+        const starRating = parseInt(star.getAttribute('data-rating'));
+        if (starRating <= rating) {
             star.style.color = '#ffc107';
             star.textContent = '⭐';
         } else {
@@ -2009,30 +2016,60 @@ function setRating(orderId, rating) {
 }
 
 async function submitRating(orderId) {
-    // Get rating from the clicked stars
-    const ratingCard = document.querySelector(`[data-order-id="${orderId}"]`);
-    if (!ratingCard) {
+    // Get rating from stored value or find from stars
+    let rating = selectedRating[orderId];
+    
+    // If not in stored value, find from stars (fallback)
+    if (!rating) {
+        const ratingCard = document.querySelector(`[data-order-id="${orderId}"]`);
+        if (!ratingCard) {
+            if (typeof CustomModal !== 'undefined') {
+                CustomModal.alert('Order not found');
+            } else {
+                alert('Order not found');
+            }
+            return;
+        }
+        
+        // Find all selected stars and get the highest rating
+        const allStars = ratingCard.querySelectorAll('.star-rating');
+        let highestRating = 0;
+        allStars.forEach(star => {
+            const starColor = star.style.color || window.getComputedStyle(star).color;
+            // Check if color is yellow (#ffc107 or rgb(255, 193, 7))
+            if (starColor.includes('rgb(255, 193, 7)') || starColor.includes('#ffc107') || starColor.includes('255, 193, 7')) {
+                const starRating = parseInt(star.getAttribute('data-rating'));
+                if (starRating > highestRating) {
+                    highestRating = starRating;
+                }
+            }
+        });
+        
+        if (highestRating === 0) {
+            if (typeof CustomModal !== 'undefined') {
+                CustomModal.alert('Please select a rating by clicking on the stars');
+            } else {
+                alert('Please select a rating by clicking on the stars');
+            }
+            return;
+        }
+        
+        rating = highestRating;
+    }
+    
+    // Ensure rating is a number between 1-5
+    rating = parseInt(rating);
+    if (isNaN(rating) || rating < 1 || rating > 5) {
         if (typeof CustomModal !== 'undefined') {
-            CustomModal.alert('Order not found');
+            CustomModal.alert('Please select a valid rating (1-5 stars)');
         } else {
-            alert('Order not found');
+            alert('Please select a valid rating (1-5 stars)');
         }
         return;
     }
     
-    // Find the selected rating
-    const selectedStar = ratingCard.querySelector('.star-rating[style*="color: rgb(255, 193, 7)"]');
-    if (!selectedStar) {
-        if (typeof CustomModal !== 'undefined') {
-            CustomModal.alert('Please select a rating by clicking on the stars');
-        } else {
-            alert('Please select a rating by clicking on the stars');
-        }
-        return;
-    }
-    
-    const rating = parseInt(selectedStar.getAttribute('data-rating'));
     const comment = document.getElementById(`ratingComment_${orderId}`)?.value || '';
+    console.log('⭐ Submitting rating:', rating, 'for order:', orderId);
     const result = await DB.submitRating(orderId, rating, comment);
     
     if (result && result.success) {

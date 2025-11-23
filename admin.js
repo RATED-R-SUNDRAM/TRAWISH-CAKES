@@ -1148,7 +1148,7 @@ function createRatingCard(rating, order = null) {
                     <p style="margin: 0; color: #666; font-size: 0.9rem;">Order: ${rating.orderId}</p>
                 </div>
                 <div style="text-align: right;">
-                    <div style="font-size: 24px; color: #ffc107;">${'⭐'.repeat(rating.rating)}${'☆'.repeat(5 - rating.rating)}</div>
+                    <div style="font-size: 24px; color: #ffc107;">${'⭐'.repeat(parseInt(rating.rating) || 0)}${'☆'.repeat(5 - (parseInt(rating.rating) || 0))}</div>
                     <p style="margin: 5px 0 0 0; color: #666; font-size: 0.85rem;">${date}</p>
                 </div>
             </div>
