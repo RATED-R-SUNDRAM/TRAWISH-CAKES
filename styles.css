@@ -80,7 +80,7 @@ body::before {
 }
 
 .logo {
-    height: 50px;
+    height: 65px;
     width: auto;
     object-fit: contain;
 }
@@ -383,8 +383,8 @@ body::before {
     width: 100%;
     height: 100%;
     z-index: 0;
-    opacity: 0.3;
-    filter: blur(5px);
+    opacity: 0.6;
+    filter: blur(2px);
 }
 
 .background-cake-image {
@@ -394,7 +394,7 @@ body::before {
     object-fit: cover;
     border-radius: 20px;
     animation: float 20s infinite ease-in-out;
-    opacity: 0.4;
+    opacity: 0.65;
 }
 
 @keyframes float {
@@ -491,6 +491,10 @@ body::before {
     z-index: 2;
     text-align: center;
     padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
 }
 
 .main-title {
@@ -516,10 +520,24 @@ body::before {
 }
 
 .subtitle {
-    font-size: 1.5rem;
-    color: var(--text-color);
-    margin-bottom: 40px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #2d3436;
+    margin-bottom: 0;
     animation: subtitleAppear 1s ease-out 0.3s both;
+    text-shadow: 
+        2px 2px 4px rgba(255, 255, 255, 0.9),
+        0 0 10px rgba(255, 255, 255, 0.8),
+        -1px -1px 2px rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.5px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 245, 245, 0.95));
+    padding: 10px 20px;
+    border-radius: 15px;
+    display: block;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 @keyframes subtitleAppear {
@@ -661,11 +679,56 @@ body::before {
 /* About Section */
 .about-section {
     background: linear-gradient(135deg, #fff5f5, #fffef7);
+    position: relative;
+    overflow: hidden;
+}
+
+.about-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('LOGO/WhatsApp Image 2025-11-23 at 22.53.41_8c25964c.jpg');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.12;
+    filter: blur(0.5px);
+    z-index: 0;
+}
+
+.about-section .container {
+    position: relative;
+    z-index: 1;
 }
 
 .about-content {
     max-width: 800px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+.about-photo-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 20px 0;
+}
+
+.about-photo {
+    width: 100%;
+    height: auto;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    object-fit: cover;
+}
+
+.about-text {
+    width: 100%;
 }
 
 .about-text p {
@@ -744,7 +807,7 @@ body::before {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    opacity: 0;
+    opacity: 1;
     transition: opacity 0.5s ease-in-out, transform 0.3s ease;
     border-radius: 10px;
     background: white;
@@ -1446,10 +1509,28 @@ body::before {
 .footer {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
-    text-align: center;
-    padding: 30px 20px;
+    padding: 30px 0;
     font-size: 1.1rem;
     line-height: 1.8;
+    overflow: hidden;
+    position: relative;
+    white-space: nowrap;
+}
+
+.footer-content {
+    display: inline-block;
+    animation: scrollText 30s linear infinite;
+    padding: 0 50px;
+    font-weight: 600;
+}
+
+@keyframes scrollText {
+    0% {
+        transform: translateX(100vw);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
 }
 
 /* Responsive Design */

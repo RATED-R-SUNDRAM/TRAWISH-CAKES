@@ -18,13 +18,34 @@
         .admin-container {
             min-height: 100vh;
             padding: 100px 20px 50px;
-            background: linear-gradient(135deg, #fffef7 0%, #fff5f5 50%, #fffef7 100%);
+            background: linear-gradient(135deg, #fff5f5, #fffef7);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('LOGO/WhatsApp Image 2025-11-23 at 22.53.41_8c25964c.jpg');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.12;
+            filter: blur(0.5px);
+            z-index: 0;
+            pointer-events: none;
         }
 
         .admin-header {
             max-width: 1200px;
             margin: 0 auto 40px;
             text-align: center;
+            position: relative;
+            z-index: 1;
         }
 
         .filter-section {
@@ -33,6 +54,8 @@
             background: white;
             padding: 20px;
             border-radius: 20px;
+            position: relative;
+            z-index: 1;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             display: flex;
             gap: 15px;
@@ -92,6 +115,8 @@
         .orders-container {
             max-width: 1200px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
         .order-card {

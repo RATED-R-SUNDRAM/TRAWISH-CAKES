@@ -199,14 +199,25 @@ const TrawishEmailService = {
         <td><strong>Phone</strong></td>
         <td>${order.customerPhone}</td>
     </tr>
+    ${order.orderType === 'CAKE' ? `
     <tr>
         <td><strong>Cake Type</strong></td>
-        <td>${order.cakeType}</td>
+        <td>${order.cakeType || 'N/A'}${order.otherCakeInput ? ` (${order.otherCakeInput})` : ''}</td>
     </tr>
     <tr>
         <td><strong>Cake Weight</strong></td>
-        <td>${order.cakeWeight}</td>
+        <td>${order.cakeWeight || 'N/A'}${order.customSizeInput ? ` - Custom: ${order.customSizeInput}` : ''}</td>
     </tr>
+    ` : `
+    <tr>
+        <td><strong>Cookie/Brownie Type</strong></td>
+        <td>${order.cookieType || 'N/A'}${order.otherCookieInput ? ` (${order.otherCookieInput})` : ''}</td>
+    </tr>
+    <tr>
+        <td><strong>Quantity</strong></td>
+        <td>${order.cookieQuantity || 'N/A'}${order.customQuantityInput ? ` - Custom: ${order.customQuantityInput}` : ''}</td>
+    </tr>
+    `}
     <tr>
         <td><strong>Delivery Date</strong></td>
         <td>${order.deliveryDate}</td>
@@ -396,6 +407,10 @@ const TrawishEmailService = {
         const quote = this.getRandomQuote('invoiceGenerated');
         const orderTable = this.buildOrderTable(order);
         
+        // Use deployed QR code image URL - this will appear in emails
+        const qrCodeUrl = 'https://i.postimg.cc/BnTLFRvJ/Whats-App-Image-2025-11-23-at-22-35-53-240a119c.jpg';
+        const qrCodeImgHtml = `<img src="${qrCodeUrl}" alt="QR Code for Payment" style="max-width: 400px; width: 100%; height: auto; border-radius: 10px; border: 3px solid #ffc107; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: block; margin: 20px auto;" />`;
+        
         const emailContent = `
             <p style="font-size: 16px; color: #555;">Dear ${order.customerName},</p>
             <p style="font-size: 16px; color: #555;">Great news! Your invoice has been generated for Order <strong>${order.orderId}</strong>.</p>
@@ -404,7 +419,15 @@ const TrawishEmailService = {
                 <h3 style="margin-top: 0; color: #856404;">💰 Payment Instructions</h3>
                 <p style="margin: 10px 0; color: #856404;"><strong>Total Invoice Amount:</strong> ₹${order.invoiceAmount}</p>
                 <p style="margin: 10px 0; color: #856404;"><strong>Advance Payment Required:</strong> ₹${order.advanceAmount}</p>
-                <p style="margin: 10px 0; color: #856404;">Please upload your payment proof after making the advance payment to proceed with your order.</p>
+                <div style="text-align: center; margin: 20px 0; padding: 20px; background: #fff; border-radius: 10px; border: 2px dashed #ffc107;">
+                    <p style="margin: 0 0 15px 0; color: #856404; font-weight: 600; font-size: 1.2rem;">📱 Payment QR Code</p>
+                    <p style="margin: 0 0 20px 0; color: #856404; font-size: 1rem; font-weight: 600;">Amount to Pay: ₹${order.advanceAmount}</p>
+                    ${qrCodeImgHtml}
+                    <p style="margin: 15px 0 10px 0; color: #856404; font-size: 1rem; font-weight: 600;">Scan to pay ₹${order.advanceAmount}</p>
+                    <p style="margin: 5px 0 0 0; color: #856404; font-size: 0.9rem;">Scan this QR code using any UPI app to make the payment</p>
+                    <p style="margin: 15px 0 0 0; color: #856404; font-size: 0.9rem;">After payment, please log in to your account and upload the payment proof screenshot in your order tracking section.</p>
+                </div>
+                <p style="margin: 15px 0 0 0; color: #856404;">Please upload your payment proof after making the advance payment to proceed with your order.</p>
             </div>
             <p style="font-size: 16px; color: #555;">We're excited to create your special cake! 🎂</p>
         `;

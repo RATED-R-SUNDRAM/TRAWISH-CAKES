@@ -266,14 +266,22 @@ const DB = {
             const newOrder = {
                 orderId: orderData.orderId || `ORDER-${Date.now()}`,
                 userId: userId, // Ensure string format
+                orderType: orderData.orderType || 'CAKE', // CAKE or COOKIE/BROWNIE
                 customerName: orderData.customerName || '',
                 customerEmail: orderData.customerEmail || '',
                 customerPhone: orderData.customerPhone || '',
                 cakeType: orderData.cakeType || '',
                 cakeWeight: orderData.cakeWeight || '',
+                cookieType: orderData.cookieType || '',
+                cookieQuantity: orderData.cookieQuantity || '',
                 deliveryDate: orderData.deliveryDate || '',
                 customization: orderData.customization || '',
                 specialRequests: orderData.specialRequests || '',
+                customSizeInput: orderData.customSizeInput || '',
+                customDesignInput: orderData.customDesignInput || '',
+                otherCakeInput: orderData.otherCakeInput || '',
+                otherCookieInput: orderData.otherCookieInput || '',
+                customQuantityInput: orderData.customQuantityInput || '',
                 sampleImage: orderData.sampleImage || null,
                 status: 1, // Order Requested
                 invoiceAmount: null,

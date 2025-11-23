@@ -309,13 +309,22 @@ function createOrderCard(order) {
                     ${order.customerPhone}
                 </div>
                 <div class="detail-item">
-                    <strong>Cake Type</strong>
-                    ${order.cakeType}
+                    <strong>${order.orderType === 'CAKE' ? 'Cake Type' : 'Cookie/Brownie Type'}</strong>
+                    ${order.orderType === 'CAKE' ? (order.cakeType || 'N/A') : (order.cookieType || 'N/A')}
+                    ${order.orderType === 'COOKIE/BROWNIE' && order.otherCookieInput ? `<br><small style="color: #666;">Custom: ${order.otherCookieInput}</small>` : ''}
                 </div>
                 <div class="detail-item">
-                    <strong>Cake Weight</strong>
-                    ${order.cakeWeight}
+                    <strong>${order.orderType === 'CAKE' ? 'Cake Weight' : 'Quantity'}</strong>
+                    ${order.orderType === 'CAKE' ? (order.cakeWeight || 'N/A') : (order.cookieQuantity || 'N/A')}
+                    ${order.orderType === 'CAKE' && order.customSizeInput ? `<br><small style="color: #666;">Custom: ${order.customSizeInput}</small>` : ''}
+                    ${order.orderType === 'COOKIE/BROWNIE' && order.customQuantityInput ? `<br><small style="color: #666;">Custom: ${order.customQuantityInput}</small>` : ''}
                 </div>
+                ${order.orderType === 'COOKIE/BROWNIE' && order.otherCookieInput ? `
+                <div class="detail-item">
+                    <strong>Custom Cookie/Brownie Type</strong>
+                    ${order.otherCookieInput}
+                </div>
+                ` : ''}
                 <div class="detail-item">
                     <strong>Delivery Date</strong>
                     ${order.deliveryDate}
@@ -349,7 +358,7 @@ function createOrderCard(order) {
                 <div class="detail-item" style="margin-top: 15px; background: #d1e7dd; padding: 15px; border-radius: 10px; border-left: 4px solid #198754;">
                     <strong style="color: #0f5132;">Customer Rating</strong>
                     <div style="color: #0f5132; margin-top: 5px;">
-                        ${'⭐'.repeat(order.rating)}${'☆'.repeat(5 - order.rating)} (${order.rating}/5)
+                        ${'⭐'.repeat(parseInt(order.rating) || 0)}${'☆'.repeat(5 - (parseInt(order.rating) || 0))} (${order.rating}/5)
                     </div>
                     ${order.ratingComment ? `
                         <p style="color: #0f5132; margin: 10px 0 0 0; font-style: italic;">"${order.ratingComment}"</p>
@@ -433,24 +442,26 @@ function getAdminActions(order) {
         `;
     }
     
-    if (order.status === 2) {
-        // Invoice generated - wait for payment proof
+    // Always show payment information if invoice is generated (status 2+)
+    if (order.status >= 2 && order.invoiceAmount) {
         html += `
-            <div class="detail-item">
-                <strong>Invoice Amount:</strong> ₹${order.invoiceAmount}
-            </div>
-            <div class="detail-item">
-                <strong>Advance Amount:</strong> ₹${order.advanceAmount}
+            <div class="detail-item" style="background: #fff3cd; border-left: 4px solid #ffc107;">
+                <strong style="color: #856404;">💰 Payment Information</strong>
+                <p style="color: #856404; margin: 5px 0;"><strong>Invoice Amount:</strong> ₹${order.invoiceAmount}</p>
+                <p style="color: #856404; margin: 5px 0;"><strong>Advance Amount:</strong> ₹${order.advanceAmount || (order.invoiceAmount / 4).toFixed(2)}</p>
             </div>
         `;
-        
+    }
+    
+    if (order.status === 2) {
+        // Invoice generated - wait for payment proof
         if (order.advancePaymentProof) {
             // Payment proof uploaded - verify and confirm
             html += `
-                <div class="payment-proof">
+                <div class="payment-proof" style="margin-top: 15px;">
                     <strong>Payment Proof Uploaded:</strong>
                     <div style="position: relative; display: inline-block; margin: 15px 0;">
-                        <img src="${order.advancePaymentProof}" alt="Payment Proof" style="max-width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);" onerror="this.style.display='none'">
+                        <img src="${order.advancePaymentProof}" alt="Payment Proof" style="max-width: 300px; max-height: 300px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);" onerror="this.style.display='none'">
                         <a href="${order.advancePaymentProof}" download="payment-proof-${order.orderId}.png" class="admin-btn" style="position: absolute; bottom: 10px; right: 10px; background: linear-gradient(135deg, #17a2b8, #138496); color: white; padding: 10px 20px; text-decoration: none; border-radius: 15px; font-size: 0.9rem;">
                             📥 Download
                         </a>
@@ -467,6 +478,21 @@ function getAdminActions(order) {
                 </div>
             `;
         }
+    }
+    
+    // Always show payment proof if it exists (for status 3+)
+    if (order.status >= 3 && order.advancePaymentProof) {
+        html += `
+            <div class="payment-proof" style="margin-top: 15px;">
+                <strong>Payment Proof:</strong>
+                <div style="position: relative; display: inline-block; margin: 15px 0;">
+                    <img src="${order.advancePaymentProof}" alt="Payment Proof" style="max-width: 300px; max-height: 300px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);" onerror="this.style.display='none'">
+                    <a href="${order.advancePaymentProof}" download="payment-proof-${order.orderId}.png" class="admin-btn" style="position: absolute; bottom: 10px; right: 10px; background: linear-gradient(135deg, #17a2b8, #138496); color: white; padding: 10px 20px; text-decoration: none; border-radius: 15px; font-size: 0.9rem;">
+                        📥 Download
+                    </a>
+                </div>
+            </div>
+        `;
     }
     
     if (order.status === 3) {
@@ -1133,7 +1159,10 @@ function createRatingCard(rating, order = null) {
             ` : ''}
             ${order ? `
                 <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;">
-                    <p style="margin: 5px 0; color: #666; font-size: 0.9rem;"><strong>Cake:</strong> ${order.cakeType} - ${order.cakeWeight}</p>
+                    <p style="margin: 5px 0; color: #666; font-size: 0.9rem;">
+                        <strong>${order.orderType === 'CAKE' ? 'Cake:' : 'Cookie/Brownie:'}</strong> 
+                        ${order.orderType === 'CAKE' ? `${order.cakeType || 'N/A'} - ${order.cakeWeight || 'N/A'}` : `${order.cookieType || 'N/A'} - ${order.cookieQuantity || 'N/A'}`}
+                    </p>
                 </div>
             ` : ''}
         </div>

@@ -11,16 +11,45 @@
 
 // Cake Images - Dynamically loaded from CAKE IMAGES folder
 const CAKE_IMAGES_PATH = 'CAKE IMAGES/';
+// List all actual image files from the folder (updated with current filenames)
 const cakeImages = [
-    '2023-06-08.jpg',
-    '2023-06-11.jpg',
-    '2023-07-08.jpg',
-    '2023-09-29.jpg',
-    '2024-03-27 (1).jpg',
-    '2024-03-27.jpg',
-    '2024-09-21.jpg',
-    'IMG_20221221_223220.jpg',
-    'IMG_20221221_223320.jpg'
+    'WhatsApp Image 2025-11-23 at 22.53.21_bedecbff.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.22_03924ac5.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.23_7059e7ca.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.23_9f7f4464.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.24_14069ec9.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.25_2fdca294.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.25_4240a05d.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.25_88c61a4c.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.26_5175f11b.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.26_9d1d2f00.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.26_cee27010.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.27_198b8727.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.27_625a9ab4.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.27_eee989c2.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.28_2290336c.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.28_29a4b13e.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.28_3ae34efd.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.28_9c9ed16c.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.29_7d3cb5b9.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.29_9d555305.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.29_c751187e.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.29_da13a4be.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.29_e1f6dea6.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.30_533477bd.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.30_9674ab0b.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.31_91545276.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.31_d515cfd3.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.31_d62210a3.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.32_7c4e042b.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.32_9ebef45c.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.32_e65f607b.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.33_878a5485.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.33_dd15bd3c.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.35_177be4a8.jpg',
+    'WhatsApp Image 2025-11-23 at 22.53.36_c691c532.jpg',
+    'WhatsApp Image 2025-11-23 at 22.54.08_8d7a1cdc.jpg',
+    'WhatsApp Image 2025-11-23 at 22.54.30_0c2ba875.jpg'
 ];
 
 // Global Variables
@@ -522,8 +551,118 @@ function checkAuthentication() {
     }
 }
 
+// Function to handle cake type change
+function handleCakeTypeChange() {
+    const cakeTypeSelect = document.getElementById('cakeType');
+    const customDesignGroup = document.getElementById('customDesignGroup');
+    const otherCakeGroup = document.getElementById('otherCakeGroup');
+    const customDesignInput = document.getElementById('customDesignInput');
+    const otherCakeInput = document.getElementById('otherCakeInput');
+    
+    if (!cakeTypeSelect) return;
+    
+    const value = cakeTypeSelect.value;
+    
+    // Hide both groups first
+    if (customDesignGroup) {
+        customDesignGroup.style.display = 'none';
+        if (customDesignInput) {
+            customDesignInput.required = false;
+            customDesignInput.value = '';
+        }
+    }
+    if (otherCakeGroup) {
+        otherCakeGroup.style.display = 'none';
+        if (otherCakeInput) {
+            otherCakeInput.required = false;
+            otherCakeInput.value = '';
+        }
+    }
+    
+    // Show appropriate group based on selection (inline next to dropdown)
+    if (value === 'Custom Design') {
+        if (customDesignGroup) {
+            customDesignGroup.style.display = 'block';
+            if (customDesignInput) {
+                customDesignInput.required = true;
+            }
+        }
+    } else if (value === 'Other') {
+        if (otherCakeGroup) {
+            otherCakeGroup.style.display = 'block';
+            if (otherCakeInput) {
+                otherCakeInput.required = true;
+            }
+        }
+    }
+}
+
+// Function to handle cake weight change
+function handleCakeWeightChange() {
+    const cakeWeightSelect = document.getElementById('cakeWeight');
+    const customSizeGroup = document.getElementById('customSizeGroup');
+    const customSizeInput = document.getElementById('customSizeInput');
+    
+    if (!cakeWeightSelect) return;
+    
+    const value = cakeWeightSelect.value;
+    if (value === 'Custom Size') {
+        if (customSizeGroup) {
+            customSizeGroup.style.display = 'block';
+            if (customSizeInput) {
+                customSizeInput.required = true;
+            }
+        }
+    } else {
+        if (customSizeGroup) {
+            customSizeGroup.style.display = 'none';
+            if (customSizeInput) {
+                customSizeInput.required = false;
+                customSizeInput.value = '';
+            }
+        }
+    }
+}
+
+// Setup custom cake/size textarea visibility
+function setupCustomFieldsHandlers() {
+    const cakeTypeSelect = document.getElementById('cakeType');
+    const cakeWeightSelect = document.getElementById('cakeWeight');
+    
+    if (cakeTypeSelect) {
+        // Remove any existing change listeners by cloning (prevents duplicates)
+        const currentValue = cakeTypeSelect.value;
+        const newCakeTypeSelect = cakeTypeSelect.cloneNode(true);
+        newCakeTypeSelect.value = currentValue; // Preserve current selection
+        cakeTypeSelect.parentNode.replaceChild(newCakeTypeSelect, cakeTypeSelect);
+        
+        newCakeTypeSelect.addEventListener('change', handleCakeTypeChange);
+        // Check current value on setup (in case something is already selected)
+        if (newCakeTypeSelect.value) {
+            handleCakeTypeChange();
+        }
+    }
+    
+    if (cakeWeightSelect) {
+        // Remove any existing change listeners by cloning (prevents duplicates)
+        const currentValue = cakeWeightSelect.value;
+        const newCakeWeightSelect = cakeWeightSelect.cloneNode(true);
+        newCakeWeightSelect.value = currentValue; // Preserve current selection
+        cakeWeightSelect.parentNode.replaceChild(newCakeWeightSelect, cakeWeightSelect);
+        
+        newCakeWeightSelect.addEventListener('change', handleCakeWeightChange);
+        // Check current value on setup (in case something is already selected)
+        if (newCakeWeightSelect.value) {
+            handleCakeWeightChange();
+        }
+    }
+}
+
 // Setup event listeners
 function setupEventListeners() {
+    // Setup custom fields handlers
+    setupCustomFieldsHandlers();
+    
     // Order button - check if user is logged in
     if (orderButton) {
         orderButton.addEventListener('click', () => {
@@ -561,9 +700,8 @@ function setupEventListeners() {
                 return;
             }
             
-            // User is logged in - open order modal
-            orderModal.classList.add('show');
-            document.body.style.overflow = 'hidden';
+            // User is logged in - show order type selection popup first
+            showOrderTypeSelection();
         });
     }
     
@@ -640,6 +778,77 @@ async function handleOrderSubmit(e) {
         return;
     }
     
+    // Get order type and validate required fields
+    const orderTypeInput = document.getElementById('orderType');
+    let orderType = orderTypeInput?.value || 'CAKE';
+    
+    console.log('🔍 Order Type:', orderType);
+    
+    // Validate based on order type
+    if (orderType === 'CAKE') {
+        const cakeType = document.getElementById('cakeType')?.value;
+        const cakeWeight = document.getElementById('cakeWeight')?.value;
+        
+        console.log('🔍 Cake Type:', cakeType, 'Cake Weight:', cakeWeight);
+        
+        if (!cakeType || !cakeWeight) {
+            const submitButton = orderForm.querySelector('button[type="submit"]');
+            submitButton.disabled = false;
+            if (typeof CustomModal !== 'undefined') {
+                CustomModal.alert('Please fill in all required cake fields (Cake Type and Weight).');
+            } else {
+                alert('Please fill in all required cake fields (Cake Type and Weight).');
+            }
+            return;
+        }
+    } else if (orderType === 'COOKIE/BROWNIE') {
+        const cookieType = document.getElementById('cookieType')?.value;
+        const cookieQuantity = document.getElementById('cookieQuantity')?.value;
+        
+        console.log('🔍 Cookie Type:', cookieType, 'Cookie Quantity:', cookieQuantity);
+        
+        if (!cookieType || !cookieQuantity) {
+            const submitButton = orderForm.querySelector('button[type="submit"]');
+            if (submitButton) submitButton.disabled = false;
+            if (typeof CustomModal !== 'undefined') {
+                CustomModal.alert('Please fill in all required cookie/brownie fields (Type and Quantity).');
+            } else {
+                alert('Please fill in all required cookie/brownie fields (Type and Quantity).');
+            }
+            return;
+        }
+        
+        // Check if "Other" is selected and custom input is filled
+        if (cookieType === 'Other') {
+            const otherCookieInput = document.getElementById('otherCookieInput')?.value;
+            if (!otherCookieInput || otherCookieInput.trim() === '') {
+                const submitButton = orderForm.querySelector('button[type="submit"]');
+                if (submitButton) submitButton.disabled = false;
+                if (typeof CustomModal !== 'undefined') {
+                    CustomModal.alert('Please specify your cookie/brownie type in the custom field.');
+                } else {
+                    alert('Please specify your cookie/brownie type in the custom field.');
+                }
+                return;
+            }
+        }
+        
+        // Check if "Custom Quantity" is selected and custom input is filled
+        if (cookieQuantity === 'Custom Quantity') {
+            const customQuantityInput = document.getElementById('customQuantityInput')?.value;
+            if (!customQuantityInput || customQuantityInput.trim() === '') {
+                const submitButton = orderForm.querySelector('button[type="submit"]');
+                if (submitButton) submitButton.disabled = false;
+                if (typeof CustomModal !== 'undefined') {
+                    CustomModal.alert('Please specify your custom quantity.');
+                } else {
+                    alert('Please specify your custom quantity.');
+                }
+                return;
+            }
+        }
+    }
+    
     const formData = new FormData(orderForm);
     
     // Handle sample image upload with compression
@@ -665,19 +874,46 @@ async function handleOrderSubmit(e) {
         }
     }
     
+    // Get order type from formData (use already validated value or fallback to formData)
+    orderType = formData.get('orderType') || orderType || 'CAKE';
+    
     const orderData = {
         orderId: '', // Will be generated after we have all data
         userId: user.id,
+        orderType: orderType, // CAKE or COOKIE/BROWNIE
         customerName: formData.get('customerName'),
         customerEmail: formData.get('customerEmail'),
         customerPhone: formData.get('customerPhone').replace(/\D/g, ''), // Remove non-digits, keep only numbers
-        cakeType: formData.get('cakeType'),
-        cakeWeight: formData.get('cakeWeight'),
         deliveryDate: formData.get('deliveryDate'),
         customization: formData.get('customization'),
         specialRequests: formData.get('specialRequests'),
         sampleImage: sampleImageData
     };
+    
+    // Only include relevant fields based on order type
+    if (orderType === 'CAKE') {
+        orderData.cakeType = formData.get('cakeType') || '';
+        orderData.cakeWeight = formData.get('cakeWeight') || '';
+        orderData.customSizeInput = formData.get('customSizeInput') || '';
+        orderData.customDesignInput = formData.get('customDesignInput') || '';
+        orderData.otherCakeInput = formData.get('otherCakeInput') || '';
+        // Clear cookie fields
+        orderData.cookieType = '';
+        orderData.cookieQuantity = '';
+        orderData.otherCookieInput = '';
+        orderData.customQuantityInput = '';
+    } else if (orderType === 'COOKIE/BROWNIE') {
+        orderData.cookieType = formData.get('cookieType') || '';
+        orderData.cookieQuantity = formData.get('cookieQuantity') || '';
+        orderData.otherCookieInput = formData.get('otherCookieInput') || '';
+        orderData.customQuantityInput = formData.get('customQuantityInput') || '';
+        // Clear cake fields
+        orderData.cakeType = '';
+        orderData.cakeWeight = '';
+        orderData.customSizeInput = '';
+        orderData.customDesignInput = '';
+        orderData.otherCakeInput = '';
+    }
     
     // Generate order ID with order data
     orderData.orderId = generateOrderId(orderData);
@@ -1075,12 +1311,24 @@ function createOrderCardHTML(order) {
                 <span class="order-status-badge ${statusClass}">${statusText}</span>
             </div>
             <div class="order-card-body">
-                <div class="order-info-row">
-                    <strong>Cake Type:</strong> ${order.cakeType}
-                </div>
-                <div class="order-info-row">
-                    <strong>Weight:</strong> ${order.cakeWeight}
-                </div>
+                ${order.orderType === 'CAKE' ? `
+                    <div class="order-info-row">
+                        <strong>Cake Type:</strong> ${order.cakeType || 'N/A'}
+                    </div>
+                    <div class="order-info-row">
+                        <strong>Weight:</strong> ${order.cakeWeight || 'N/A'}
+                        ${order.customSizeInput ? `<br><small style="color: #666;">Custom: ${order.customSizeInput}</small>` : ''}
+                    </div>
+                ` : `
+                    <div class="order-info-row">
+                        <strong>Cookie/Brownie Type:</strong> ${order.cookieType || 'N/A'}
+                        ${order.otherCookieInput ? `<br><small style="color: #666;">Custom: ${order.otherCookieInput}</small>` : ''}
+                    </div>
+                    <div class="order-info-row">
+                        <strong>Quantity:</strong> ${order.cookieQuantity || 'N/A'}
+                        ${order.customQuantityInput ? `<br><small style="color: #666;">Custom: ${order.customQuantityInput}</small>` : ''}
+                    </div>
+                `}
                 <div class="order-info-row">
                     <strong>Delivery Date:</strong> ${order.deliveryDate}
                 </div>
@@ -1113,13 +1361,32 @@ function createOrderCardHTML(order) {
                 <div class="order-status-timeline">
                     ${createOrderStatusTimeline(order.status)}
                 </div>
-                ${order.status === 2 && !order.advancePaymentProof ? `
-                    <div class="payment-upload-section">
-                        <label for="paymentProof_${order.orderId}" class="upload-button">
-                            Upload Payment Proof
-                        </label>
-                        <input type="file" id="paymentProof_${order.orderId}" accept="image/*" style="display: none;" onchange="uploadPaymentProof('${order.orderId}', this)">
-                        <p class="payment-note">Please pay ₹${order.advanceAmount} and upload the payment proof to proceed.</p>
+                ${order.status === 2 ? `
+                    <div class="payment-upload-section" style="background: linear-gradient(135deg, #fff9e6, #fff5e6); padding: 20px; border-radius: 15px; border: 2px dashed var(--secondary-color); margin-top: 20px;">
+                        ${order.advanceAmount ? `
+                            <div style="margin-bottom: 15px;">
+                                <strong style="color: #856404; font-size: 1.1rem;">💰 Payment Information</strong>
+                                <p style="color: #856404; margin: 5px 0;">Total Invoice: ₹${order.invoiceAmount}</p>
+                                <p style="color: #856404; margin: 5px 0;">Advance Amount: ₹${order.advanceAmount}</p>
+                            </div>
+                            <div style="margin: 20px 0; text-align: center;">
+                                <img src="QR/WhatsApp Image 2025-11-23 at 22.35.53_240a119c.jpg" alt="QR Code for Payment" class="qr-code-preview" onclick="showFullScreenQR('${order.orderId}', '${order.advanceAmount}')" style="max-width: 300px; max-height: 300px; border-radius: 10px; border: 3px solid #ffc107; cursor: pointer; transition: transform 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2);" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                <p style="color: #856404; margin-top: 15px; font-size: 1rem; font-weight: 600;">Scan to pay ₹${order.advanceAmount}</p>
+                                <p style="color: #856404; margin-top: 5px; font-size: 0.85rem; font-style: italic;">💡 Click on QR code to view full screen</p>
+                            </div>
+                        ` : ''}
+                        ${!order.advancePaymentProof ? `
+                            <label for="paymentProof_${order.orderId}" class="upload-button">
+                                Upload Payment Proof
+                            </label>
+                            <input type="file" id="paymentProof_${order.orderId}" accept="image/*" style="display: none;" onchange="uploadPaymentProof('${order.orderId}', this)">
+                            <p class="payment-note">Please pay ₹${order.advanceAmount || 'the advance amount'} and upload the payment proof to proceed.</p>
+                        ` : `
+                            <div style="margin-top: 15px; padding: 15px; background: #d4edda; border-radius: 10px;">
+                                <strong style="color: #155724;">✅ Payment Proof Uploaded</strong>
+                                <p style="color: #155724; margin: 5px 0; font-size: 0.9rem;">Waiting for admin verification...</p>
+                            </div>
+                        `}
                     </div>
                 ` : ''}
                 ${order.status === 5 && !order.rating ? `
@@ -1138,7 +1405,7 @@ function createOrderCardHTML(order) {
                     <div class="rating-display" style="background: #d1e7dd; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 4px solid #198754;">
                         <h4 style="color: #0f5132; margin-top: 0;">⭐ Your Rating</h4>
                         <div style="color: #0f5132; margin-bottom: 10px;">
-                            ${'⭐'.repeat(order.rating)}${'☆'.repeat(5 - order.rating)} (${order.rating}/5)
+                            ${'⭐'.repeat(parseInt(order.rating) || 0)}${'☆'.repeat(5 - (parseInt(order.rating) || 0))} (${order.rating}/5)
                         </div>
                         ${order.ratingComment ? `<p style="color: #0f5132; margin: 0; font-style: italic;">"${order.ratingComment}"</p>` : ''}
                         <p style="color: #0f5132; margin-top: 10px; font-size: 0.9rem;">Thank you for your feedback! 💝</p>
@@ -1235,6 +1502,491 @@ async function uploadPaymentProof(orderId, input) {
             CustomModal.alert('Error processing image. Please try a different image.');
         } else {
             alert('Error processing image. Please try a different image.');
+        }
+    }
+}
+
+// Show full-screen QR code modal
+function showFullScreenQR(orderId, amount) {
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.id = 'qrFullScreenModal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.3s ease;
+        padding: 20px;
+        box-sizing: border-box;
+    `;
+    
+    // Create modal content - optimized for QR code display
+    const content = document.createElement('div');
+    content.style.cssText = `
+        background: white;
+        border-radius: 20px;
+        padding: 0;
+        width: 100%;
+        max-width: 450px;
+        height: 100%;
+        max-height: 85vh;
+        text-align: center;
+        position: relative;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        animation: slideUp 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    `;
+    
+    // Close button
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '&times;';
+    closeBtn.style.cssText = `
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: #ff6b9d;
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        font-size: 28px;
+        cursor: pointer;
+        line-height: 1;
+        transition: all 0.3s ease;
+        z-index: 10001;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+    `;
+    closeBtn.onmouseover = () => {
+        closeBtn.style.transform = 'rotate(90deg) scale(1.1)';
+        closeBtn.style.background = '#ffb347';
+    };
+    closeBtn.onmouseout = () => {
+        closeBtn.style.transform = 'rotate(0deg) scale(1)';
+        closeBtn.style.background = '#ff6b9d';
+    };
+    
+    // Header section - compact
+    const header = document.createElement('div');
+    header.style.cssText = `
+        padding: 25px 20px 20px;
+        background: linear-gradient(135deg, #fff9e6, #fff5e6);
+        border-bottom: 3px solid #ffc107;
+        flex-shrink: 0;
+    `;
+    header.innerHTML = `
+        <h2 style="color: #856404; margin: 0 0 8px 0; font-size: 1.5rem; font-weight: 700;">💰 Payment QR Code</h2>
+        <p style="color: #856404; font-size: 1.2rem; margin: 0; font-weight: 600;">Amount: ₹${amount}</p>
+    `;
+    
+    // QR Code container - takes all remaining space
+    const qrContainer = document.createElement('div');
+    qrContainer.style.cssText = `
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        background: linear-gradient(135deg, #2d3436, #636e72);
+        position: relative;
+        overflow: hidden;
+        min-height: 0;
+    `;
+    
+    // QR Code image - fills entire container
+    const qrImg = document.createElement('img');
+    qrImg.src = 'QR/WhatsApp Image 2025-11-23 at 22.35.53_240a119c.jpg';
+    qrImg.alt = 'QR Code for Payment';
+    qrImg.style.cssText = `
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        border-radius: 10px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        display: block;
+    `;
+    
+    // Instructions footer - compact
+    const footer = document.createElement('div');
+    footer.style.cssText = `
+        padding: 15px 20px;
+        background: white;
+        border-top: 2px solid #ffc107;
+        flex-shrink: 0;
+    `;
+    footer.innerHTML = `
+        <p style="font-size: 1rem; margin: 5px 0; color: #856404; font-weight: 600;"><strong>📱 Scan to pay ₹${amount}</strong></p>
+        <p style="font-size: 0.85rem; margin: 3px 0; color: #666;">Scan using any UPI app</p>
+    `;
+    
+    // Assemble modal
+    qrContainer.appendChild(qrImg);
+    content.appendChild(closeBtn);
+    content.appendChild(header);
+    content.appendChild(qrContainer);
+    content.appendChild(footer);
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+    
+    // Close handlers
+    const closeModal = () => {
+        modal.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => {
+            if (modal.parentNode) {
+                modal.parentNode.removeChild(modal);
+            }
+        }, 300);
+    };
+    
+    closeBtn.onclick = (e) => {
+        e.stopPropagation();
+        closeModal();
+    };
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    };
+    
+    // Prevent clicks inside modal from closing it
+    content.onclick = (e) => {
+        e.stopPropagation();
+    };
+    
+    // Close on Escape key
+    const escapeHandler = (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', escapeHandler);
+        }
+    };
+    document.addEventListener('keydown', escapeHandler);
+}
+
+// Order type selection (CAKE or COOKIE/BROWNIE)
+let selectedOrderType = null;
+
+function showOrderTypeSelection() {
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.id = 'orderTypeSelectionModal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    // Create modal content
+    const content = document.createElement('div');
+    content.style.cssText = `
+        background: white;
+        border-radius: 30px;
+        padding: 50px 40px;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        animation: slideUp 0.3s ease;
+    `;
+    
+    content.innerHTML = `
+        <h2 style="color: var(--primary-color); margin: 0 0 20px 0; font-size: 2rem;">What would you like to order?</h2>
+        <p style="color: #666; margin-bottom: 30px; font-size: 1.1rem;">Please select an option</p>
+        <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+            <button id="selectCakeBtn" style="flex: 1; min-width: 180px; padding: 25px 20px; background: linear-gradient(135deg, #ff6b9d, #ffb347); color: white; border: none; border-radius: 20px; font-size: 1.3rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 5px 20px rgba(255, 107, 157, 0.4);">
+                🎂 CAKE
+            </button>
+            <button id="selectCookieBtn" style="flex: 1; min-width: 180px; padding: 25px 15px; background: linear-gradient(135deg, #c44569, #f8b500); color: white; border: none; border-radius: 20px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 5px 20px rgba(196, 69, 105, 0.4); line-height: 1.3; word-wrap: break-word; white-space: normal;">
+                🍪<br>COOKIE/<br>BROWNIE
+            </button>
+        </div>
+    `;
+    
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+    
+    // Button hover effects
+    const cakeBtn = document.getElementById('selectCakeBtn');
+    const cookieBtn = document.getElementById('selectCookieBtn');
+    
+    cakeBtn.onmouseover = () => {
+        cakeBtn.style.transform = 'translateY(-5px) scale(1.05)';
+        cakeBtn.style.boxShadow = '0 10px 30px rgba(255, 107, 157, 0.6)';
+    };
+    cakeBtn.onmouseout = () => {
+        cakeBtn.style.transform = 'translateY(0) scale(1)';
+        cakeBtn.style.boxShadow = '0 5px 20px rgba(255, 107, 157, 0.4)';
+    };
+    
+    cookieBtn.onmouseover = () => {
+        cookieBtn.style.transform = 'translateY(-5px) scale(1.05)';
+        cookieBtn.style.boxShadow = '0 10px 30px rgba(196, 69, 105, 0.6)';
+    };
+    cookieBtn.onmouseout = () => {
+        cookieBtn.style.transform = 'translateY(0) scale(1)';
+        cookieBtn.style.boxShadow = '0 5px 20px rgba(196, 69, 105, 0.4)';
+    };
+    
+    // Close modal
+    const closeModal = () => {
+        modal.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => {
+            if (modal.parentNode) {
+                modal.parentNode.removeChild(modal);
+            }
+        }, 300);
+    };
+    
+    // Event handlers
+    cakeBtn.onclick = () => {
+        selectedOrderType = 'CAKE';
+        closeModal();
+        setTimeout(() => {
+            openOrderModal('CAKE');
+        }, 300);
+    };
+    
+    cookieBtn.onclick = () => {
+        selectedOrderType = 'COOKIE/BROWNIE';
+        closeModal();
+        setTimeout(() => {
+            openOrderModal('COOKIE/BROWNIE');
+        }, 300);
+    };
+    
+    // Close on outside click
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    };
+    
+    // Close on Escape
+    const escapeHandler = (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', escapeHandler);
+        }
+    };
+    document.addEventListener('keydown', escapeHandler);
+}
+
+function openOrderModal(orderType) {
+    // Update modal header based on order type
+    const modalHeader = document.querySelector('#orderModal .modal-header h2');
+    if (modalHeader) {
+        if (orderType === 'CAKE') {
+            modalHeader.innerHTML = '🎂 Place Your Cake Order';
+        } else {
+            modalHeader.innerHTML = '🍪 Place Your Cookie/Brownie Order';
+        }
+    }
+    
+    // Get form field groups
+    const cakeTypeGroup = document.getElementById('cakeType').closest('.form-group');
+    const cakeWeightGroup = document.getElementById('cakeWeight').closest('.form-group');
+    const cookieTypeGroup = document.getElementById('cookieTypeGroup');
+    const cookieQuantityGroup = document.getElementById('cookieQuantityGroup');
+    const cakeTypeSelect = document.getElementById('cakeType');
+    const cakeWeightSelect = document.getElementById('cakeWeight');
+    const cookieTypeSelect = document.getElementById('cookieType');
+    const cookieQuantitySelect = document.getElementById('cookieQuantity');
+    
+    if (orderType === 'CAKE') {
+        // Show cake fields, hide cookie fields
+        if (cakeTypeGroup) cakeTypeGroup.style.display = 'block';
+        if (cakeWeightGroup) cakeWeightGroup.style.display = 'block';
+        if (cookieTypeGroup) cookieTypeGroup.style.display = 'none';
+        if (cookieQuantityGroup) cookieQuantityGroup.style.display = 'none';
+        
+        // Make cake fields required, cookie fields not required
+        if (cakeTypeSelect) {
+            cakeTypeSelect.required = true;
+            cakeTypeSelect.setAttribute('required', 'required');
+        }
+        if (cakeWeightSelect) {
+            cakeWeightSelect.required = true;
+            cakeWeightSelect.setAttribute('required', 'required');
+        }
+        if (cookieTypeSelect) {
+            cookieTypeSelect.required = false;
+            cookieTypeSelect.removeAttribute('required');
+            cookieTypeSelect.value = '';
+        }
+        if (cookieQuantitySelect) {
+            cookieQuantitySelect.required = false;
+            cookieQuantitySelect.removeAttribute('required');
+            cookieQuantitySelect.value = '';
+        }
+        
+        // Clear cookie field values and custom inputs
+        const otherCookieInput = document.getElementById('otherCookieInput');
+        const customQuantityInput = document.getElementById('customQuantityInput');
+        if (otherCookieInput) {
+            otherCookieInput.value = '';
+            otherCookieInput.required = false;
+            otherCookieInput.removeAttribute('required');
+        }
+        if (customQuantityInput) {
+            customQuantityInput.value = '';
+            customQuantityInput.required = false;
+            customQuantityInput.removeAttribute('required');
+        }
+    } else {
+        // Show cookie fields, hide cake fields
+        if (cakeTypeGroup) cakeTypeGroup.style.display = 'none';
+        if (cakeWeightGroup) cakeWeightGroup.style.display = 'none';
+        if (cookieTypeGroup) cookieTypeGroup.style.display = 'block';
+        if (cookieQuantityGroup) cookieQuantityGroup.style.display = 'block';
+        
+        // Make cookie fields required, cake fields not required
+        if (cakeTypeSelect) {
+            cakeTypeSelect.required = false;
+            cakeTypeSelect.removeAttribute('required');
+            cakeTypeSelect.value = '';
+        }
+        if (cakeWeightSelect) {
+            cakeWeightSelect.required = false;
+            cakeWeightSelect.removeAttribute('required');
+            cakeWeightSelect.value = '';
+        }
+        if (cookieTypeSelect) {
+            cookieTypeSelect.required = true;
+            cookieTypeSelect.setAttribute('required', 'required');
+        }
+        if (cookieQuantitySelect) {
+            cookieQuantitySelect.required = true;
+            cookieQuantitySelect.setAttribute('required', 'required');
+        }
+        
+        // Clear cake field values and custom inputs
+        const customSizeInput = document.getElementById('customSizeInput');
+        const customDesignInput = document.getElementById('customDesignInput');
+        const otherCakeInput = document.getElementById('otherCakeInput');
+        if (customSizeInput) {
+            customSizeInput.value = '';
+            customSizeInput.required = false;
+            customSizeInput.removeAttribute('required');
+        }
+        if (customDesignInput) {
+            customDesignInput.value = '';
+            customDesignInput.required = false;
+            customDesignInput.removeAttribute('required');
+        }
+        if (otherCakeInput) {
+            otherCakeInput.value = '';
+            otherCakeInput.required = false;
+            otherCakeInput.removeAttribute('required');
+        }
+    }
+    
+    // Store order type in a hidden field
+    let orderTypeInput = document.getElementById('orderType');
+    if (!orderTypeInput) {
+        orderTypeInput = document.createElement('input');
+        orderTypeInput.type = 'hidden';
+        orderTypeInput.id = 'orderType';
+        orderTypeInput.name = 'orderType';
+        document.getElementById('orderForm').appendChild(orderTypeInput);
+    }
+    orderTypeInput.value = orderType;
+    
+    // Setup cookie/brownie custom field handlers
+    setupCookieFieldHandlers();
+    
+    // Open modal
+    orderModal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    
+    // Re-setup custom field handlers for cake fields
+    setTimeout(() => {
+        setupCustomFieldsHandlers();
+    }, 50);
+}
+
+// Setup cookie/brownie field handlers (for "Other" type and "Custom Quantity")
+function setupCookieFieldHandlers() {
+    const cookieTypeSelect = document.getElementById('cookieType');
+    const cookieQuantitySelect = document.getElementById('cookieQuantity');
+    const otherCookieGroup = document.getElementById('otherCookieGroup');
+    const otherCookieInput = document.getElementById('otherCookieInput');
+    const customQuantityGroup = document.getElementById('customQuantityGroup');
+    const customQuantityInput = document.getElementById('customQuantityInput');
+    
+    // Cookie type change handler
+    if (cookieTypeSelect && otherCookieGroup) {
+        // Remove existing listener by cloning
+        const currentValue = cookieTypeSelect.value;
+        const newCookieTypeSelect = cookieTypeSelect.cloneNode(true);
+        newCookieTypeSelect.value = currentValue;
+        cookieTypeSelect.parentNode.replaceChild(newCookieTypeSelect, cookieTypeSelect);
+        
+        newCookieTypeSelect.addEventListener('change', () => {
+            if (newCookieTypeSelect.value === 'Other') {
+                otherCookieGroup.style.display = 'block';
+                if (otherCookieInput) otherCookieInput.required = true;
+            } else {
+                otherCookieGroup.style.display = 'none';
+                if (otherCookieInput) {
+                    otherCookieInput.required = false;
+                    otherCookieInput.value = '';
+                }
+            }
+        });
+        
+        // Check initial value
+        if (newCookieTypeSelect.value === 'Other') {
+            otherCookieGroup.style.display = 'block';
+            if (otherCookieInput) otherCookieInput.required = true;
+        }
+    }
+    
+    // Cookie quantity change handler
+    if (cookieQuantitySelect && customQuantityGroup) {
+        // Remove existing listener by cloning
+        const currentValue = cookieQuantitySelect.value;
+        const newCookieQuantitySelect = cookieQuantitySelect.cloneNode(true);
+        newCookieQuantitySelect.value = currentValue;
+        cookieQuantitySelect.parentNode.replaceChild(newCookieQuantitySelect, cookieQuantitySelect);
+        
+        newCookieQuantitySelect.addEventListener('change', () => {
+            if (newCookieQuantitySelect.value === 'Custom Quantity') {
+                customQuantityGroup.style.display = 'block';
+                if (customQuantityInput) customQuantityInput.required = true;
+            } else {
+                customQuantityGroup.style.display = 'none';
+                if (customQuantityInput) {
+                    customQuantityInput.required = false;
+                    customQuantityInput.value = '';
+                }
+            }
+        });
+        
+        // Check initial value
+        if (newCookieQuantitySelect.value === 'Custom Quantity') {
+            customQuantityGroup.style.display = 'block';
+            if (customQuantityInput) customQuantityInput.required = true;
         }
     }
 }

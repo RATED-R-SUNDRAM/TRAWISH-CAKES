@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trawish Cakes - Delicious Cakes for Every Occasion</title>
-    <link rel="icon" type="image/png" href="LOGO/Screenshot 2025-11-14 232336.png">
-    <link rel="shortcut icon" type="image/png" href="LOGO/Screenshot 2025-11-14 232336.png">
-    <link rel="apple-touch-icon" href="LOGO/Screenshot 2025-11-14 232336.png">
+    <link rel="icon" type="image/jpeg" href="LOGO/WhatsApp Image 2025-11-23 at 22.53.41_8c25964c.jpg">
+    <link rel="shortcut icon" type="image/jpeg" href="LOGO/WhatsApp Image 2025-11-23 at 22.53.41_8c25964c.jpg">
+    <link rel="apple-touch-icon" href="LOGO/WhatsApp Image 2025-11-23 at 22.53.41_8c25964c.jpg">
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,14 +36,14 @@
     <header class="header" id="header">
         <div class="nav-container">
             <div class="logo-container">
-                <img src="LOGO/Screenshot 2025-11-14 232336.png" alt="Trawish Cakes Logo" class="logo">
+                <img src="LOGO/WhatsApp Image 2025-11-23 at 22.53.41_8c25964c.jpg" alt="Trawish Cakes Logo" class="logo">
                 <span class="logo-text">Trawish Cakes</span>
             </div>
             <nav class="nav-menu" id="navMenu">
                 <a href="#home" class="nav-link active">HOME</a>
                 <a href="#about" class="nav-link">ABOUT</a>
                 <a href="#gallery" class="nav-link">GALLERY</a>
-                <a href="#accounts" class="nav-link" id="accountsLink" style="display: none;">ACCOUNTS</a>
+                <a href="#accounts" class="nav-link" id="accountsLink" style="display: none;">ORDERS</a>
                 <a href="#contact" class="nav-link">CONTACT</a>
                 <a href="#" class="nav-link" id="loginLink">LOGIN</a>
                 <a href="#" class="nav-link" id="logoutLink" style="display: none;">LOGOUT</a>
@@ -82,6 +82,9 @@
         <div class="container">
             <h2 class="section-title">About Us 🍰✨</h2>
             <div class="about-content">
+                <div class="about-photo-container">
+                    <img src="ABOUT_ME_PHOTO/WhatsApp Image 2025-11-23 at 22.49.37_0df480c5.jpg" alt="About Trawish Cakes" class="about-photo">
+                </div>
                 <div class="about-text">
                     <p>Welcome to Trawish Cakes — where every creation is a celebration! 🎉 We believe cakes aren't just desserts; they're edible expressions of joy, crafted with heart and a personal touch 💖. Whether it's a towering showstopper or a delicately customized treat, we specialize in bringing your sweetest visions to life 🎂.</p>
                     <p>Led by a passionate woman entrepreneur 👩‍🍳, our bakery is built on the pillars of honesty, creativity, and customer satisfaction. From birthdays and weddings to surprise parties and milestone moments, we pour our soul into every layer, swirl, and sprinkle 🌈.</p>
@@ -138,12 +141,14 @@
                         </div>
                     </div>
                     <div class="contact-item">
-                        <span class="contact-icon">📍</span>
-                        <div>
-                            <h3>Location</h3>
-                            <h4>Available for pickup and delivery</h4>
-                            <p>Solacia Internal Road, Near RMC Garden, Wagholi, Pune</p>
-                        </div>
+                        <a href="https://maps.app.goo.gl/gMwKTge5BFA5XSweA" target="_blank" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 15px;">
+                            <span class="contact-icon" style="cursor: pointer; color: #667eea; font-size: 2rem;">📍</span>
+                            <div>
+                                <h3>Location</h3>
+                                <h4>Available for pickup and delivery</h4>
+                                <p style="text-decoration: underline; color: #667eea;">Solacia Internal Road, Near RMC Garden, Wagholi, Pune</p>
+                            </div>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -158,7 +163,7 @@
                 <h2>🎂 Place Your Cake Order</h2>
                 <p>Fill in the details below and we'll get back to you soon!</p>
             </div>
-            <form id="orderForm" class="order-form">
+            <form id="orderForm" class="order-form" novalidate>
                 <div class="form-group">
                     <label for="customerName">Your Name *</label>
                     <input type="text" id="customerName" name="customerName" required placeholder="Enter your name">
@@ -177,29 +182,83 @@
                 
                 <div class="form-group">
                     <label for="cakeType">Cake Type *</label>
-                    <select id="cakeType" name="cakeType" required>
-                        <option value="">Select cake type</option>
-                        <option value="Birthday Cake">🎂 Birthday Cake</option>
-                        <option value="Wedding Cake">💒 Wedding Cake</option>
-                        <option value="Anniversary Cake">💑 Anniversary Cake</option>
-                        <option value="Chocolate Cake">🍫 Chocolate Cake</option>
-                        <option value="Red Velvet Cake">❤️ Red Velvet Cake</option>
-                        <option value="Vanilla Cake">🌿 Vanilla Cake</option>
-                        <option value="Custom Design">🎨 Custom Design</option>
-                        <option value="Other">✨ Other</option>
-                    </select>
+                    <div style="display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap;">
+                        <select id="cakeType" name="cakeType" required style="flex: 1; min-width: 250px;">
+                            <option value="">Select cake type</option>
+                            <option value="Birthday Cake">🎂 Birthday Cake</option>
+                            <option value="Wedding Cake">💒 Wedding Cake</option>
+                            <option value="Anniversary Cake">💑 Anniversary Cake</option>
+                            <option value="Chocolate Cake">🍫 Chocolate Cake</option>
+                            <option value="Red Velvet Cake">❤️ Red Velvet Cake</option>
+                            <option value="Vanilla Cake">🌿 Vanilla Cake</option>
+                            <option value="Custom Design">🎨 Custom Design</option>
+                            <option value="Other">✨ Other</option>
+                        </select>
+                        <div id="customDesignGroup" style="display: none; flex: 1; min-width: 250px;">
+                            <textarea id="customDesignInput" name="customDesignInput" rows="3" placeholder="Please describe your custom cake design, theme, colors, decorations..." required style="width: 100%;"></textarea>
+                        </div>
+                        <div id="otherCakeGroup" style="display: none; flex: 1; min-width: 250px;">
+                            <input type="text" id="otherCakeInput" name="otherCakeInput" placeholder="Please specify your cake type..." required style="width: 100%;">
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="cakeWeight">Cake Weight/Size *</label>
-                    <select id="cakeWeight" name="cakeWeight" required>
-                        <option value="">Select size</option>
-                        <option value="Small (1-2 lbs)">Small (1-2 lbs) - Serves 4-6</option>
-                        <option value="Medium (2-3 lbs)">Medium (2-3 lbs) - Serves 8-10</option>
-                        <option value="Large (3-5 lbs)">Large (3-5 lbs) - Serves 12-16</option>
-                        <option value="Extra Large (5-8 lbs)">Extra Large (5-8 lbs) - Serves 20-25</option>
-                        <option value="Custom Size">Custom Size</option>
-                    </select>
+                    <div style="display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap;">
+                        <select id="cakeWeight" name="cakeWeight" required style="flex: 1; min-width: 250px;">
+                            <option value="">Select size</option>
+                            <option value="Small (0.5-1 Kg)">Small (0.5-1 Kg) - Serves 4-6</option>
+                            <option value="Medium (1-1.5 Kg)">Medium (1-1.5 Kg) - Serves 8-10</option>
+                            <option value="Large (1.5-2.5 Kg)">Large (1.5-2.5 Kg) - Serves 12-16</option>
+                            <option value="Extra Large (2.5-4 Kg)">Extra Large (2.5-4 Kg) - Serves 20-25</option>
+                            <option value="Custom Size">Custom Size</option>
+                        </select>
+                        <div id="customSizeGroup" style="display: none; flex: 1; min-width: 250px;">
+                            <textarea id="customSizeInput" name="customSizeInput" rows="3" placeholder="Please specify your custom cake weight (in Kgs) and serving size requirements..." required style="width: 100%;"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="cookieTypeGroup" style="display: none;">
+                    <label for="cookieType">Cookie/Brownie Type *</label>
+                    <div style="display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap;">
+                        <select id="cookieType" name="cookieType" required style="flex: 1; min-width: 250px;">
+                            <option value="">Select type</option>
+                            <option value="Chocolate Chip Cookies">🍪 Chocolate Chip Cookies</option>
+                            <option value="Oatmeal Cookies">🥜 Oatmeal Cookies</option>
+                            <option value="Sugar Cookies">🍬 Sugar Cookies</option>
+                            <option value="Butter Cookies">🧈 Butter Cookies</option>
+                            <option value="Chocolate Brownies">🍫 Chocolate Brownies</option>
+                            <option value="Blondies">🍋 Blondies</option>
+                            <option value="Nutella Brownies">🥜 Nutella Brownies</option>
+                            <option value="Assorted Cookies">🍪🍪 Assorted Cookies</option>
+                            <option value="Other">✨ Other</option>
+                        </select>
+                        <div id="otherCookieGroup" style="display: none; flex: 1; min-width: 250px;">
+                            <input type="text" id="otherCookieInput" name="otherCookieInput" placeholder="Please specify your cookie/brownie type..." style="width: 100%;">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="cookieQuantityGroup" style="display: none;">
+                    <label for="cookieQuantity">Quantity *</label>
+                    <div style="display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap;">
+                        <select id="cookieQuantity" name="cookieQuantity" required style="flex: 1; min-width: 250px;">
+                            <option value="">Select quantity</option>
+                            <option value="Half Dozen (6 pcs)">Half Dozen (6 pcs)</option>
+                            <option value="Dozen (12 pcs)">Dozen (12 pcs)</option>
+                            <option value="1.5 Dozen (18 pcs)">1.5 Dozen (18 pcs)</option>
+                            <option value="2 Dozen (24 pcs)">2 Dozen (24 pcs)</option>
+                            <option value="3 Dozen (36 pcs)">3 Dozen (36 pcs)</option>
+                            <option value="4 Dozen (48 pcs)">4 Dozen (48 pcs)</option>
+                            <option value="5 Dozen (60 pcs)">5 Dozen (60 pcs)</option>
+                            <option value="Custom Quantity">Custom Quantity</option>
+                        </select>
+                        <div id="customQuantityGroup" style="display: none; flex: 1; min-width: 250px;">
+                            <input type="text" id="customQuantityInput" name="customQuantityInput" placeholder="Please specify your custom quantity..." style="width: 100%;">
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -248,7 +307,9 @@
     </div>
 
     <footer class="footer">
-        <p>Life is what you bake it! 🎂 Don't worry, be cake-y! At Trawish Cakes, we're not crummy at what we do - we're the frosting on top of perfection! 💕</p>
+        <div class="footer-content">
+            🎂 Sweet Dreams Start Here! 🍰 Every slice tells a story, every cake creates memories! ✨ At Trawish Cakes, we mix passion with perfection - because life's too short for ordinary desserts! 🎉 From birthdays to weddings, we turn your moments into masterpieces! 💝 Bake the world a better place, one cake at a time! 🌟
+        </div>
     </footer>
 
     <script src="firebase-config.js"></script>
