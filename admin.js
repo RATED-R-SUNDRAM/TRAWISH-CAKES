@@ -359,8 +359,17 @@ function createOrderCard(order) {
                     <strong style="color: #0f5132;">Customer Rating</strong>
                     <div style="color: #0f5132; margin-top: 5px;">
                         ${(() => {
-                            const ratingValue = parseInt(order.rating) || 0;
-                            console.log('⭐ Admin display - Order rating:', order.rating, 'Parsed:', ratingValue);
+                            // Ensure rating is a number (1-5)
+                            let ratingValue = order.rating;
+                            if (ratingValue !== undefined && ratingValue !== null) {
+                                ratingValue = typeof ratingValue === 'number' ? ratingValue : parseInt(ratingValue);
+                                if (isNaN(ratingValue) || ratingValue < 1 || ratingValue > 5) {
+                                    ratingValue = 0;
+                                }
+                            } else {
+                                ratingValue = 0;
+                            }
+                            console.log('⭐ Admin display - Order rating raw:', order.rating, 'Type:', typeof order.rating, 'Parsed:', ratingValue);
                             return '⭐'.repeat(ratingValue) + '☆'.repeat(5 - ratingValue) + ' (' + ratingValue + '/5)';
                         })()}
                     </div>
@@ -1152,7 +1161,19 @@ function createRatingCard(rating, order = null) {
                     <p style="margin: 0; color: #666; font-size: 0.9rem;">Order: ${rating.orderId}</p>
                 </div>
                 <div style="text-align: right;">
-                    <div style="font-size: 24px; color: #ffc107;">${'⭐'.repeat(parseInt(rating.rating) || 0)}${'☆'.repeat(5 - (parseInt(rating.rating) || 0))}</div>
+                    <div style="font-size: 24px; color: #ffc107;">${(() => {
+                        let ratingValue = rating.rating;
+                        if (ratingValue !== undefined && ratingValue !== null) {
+                            ratingValue = typeof ratingValue === 'number' ? ratingValue : parseInt(ratingValue);
+                            if (isNaN(ratingValue) || ratingValue < 1 || ratingValue > 5) {
+                                ratingValue = 0;
+                            }
+                        } else {
+                            ratingValue = 0;
+                        }
+                        console.log('⭐ Ratings section - Rating raw:', rating.rating, 'Type:', typeof rating.rating, 'Parsed:', ratingValue);
+                        return '⭐'.repeat(ratingValue) + '☆'.repeat(5 - ratingValue);
+                    })()}</div>
                     <p style="margin: 5px 0 0 0; color: #666; font-size: 0.85rem;">${date}</p>
                 </div>
             </div>

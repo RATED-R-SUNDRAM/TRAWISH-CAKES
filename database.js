@@ -158,12 +158,26 @@ const DB = {
             // Try with orderBy first
             try {
                 const snapshot = await db.collection('orders').orderBy('createdAt', 'desc').get();
-                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                return snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    // Ensure rating is properly handled (convert Firestore number to JavaScript number)
+                    if (data.rating !== undefined && data.rating !== null) {
+                        data.rating = typeof data.rating === 'number' ? data.rating : parseInt(data.rating) || 0;
+                    }
+                    return { id: doc.id, ...data };
+                });
             } catch (indexError) {
                 // Fall back to getting all orders and sorting client-side
                 console.warn('Order index not found, using fallback:', indexError);
                 const snapshot = await db.collection('orders').get();
-                const allOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const allOrders = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    // Ensure rating is a number if it exists
+                    if (data.rating !== undefined && data.rating !== null) {
+                        data.rating = typeof data.rating === 'number' ? data.rating : parseInt(data.rating) || null;
+                    }
+                    return { id: doc.id, ...data };
+                });
                 
                 // Sort by createdAt (handle server timestamps)
                 allOrders.sort((a, b) => {
@@ -191,12 +205,22 @@ const DB = {
             const snapshot = await db.collection('orders').where('orderId', '==', orderId).limit(1).get();
             if (!snapshot.empty) {
                 const doc = snapshot.docs[0];
-                return { id: doc.id, ...doc.data() };
+                const data = doc.data();
+                // Ensure rating is a number if it exists
+                if (data.rating !== undefined && data.rating !== null) {
+                    data.rating = typeof data.rating === 'number' ? data.rating : parseInt(data.rating) || null;
+                }
+                return { id: doc.id, ...data };
             }
             // Try by document ID
             const doc = await db.collection('orders').doc(orderId).get();
             if (doc.exists) {
-                return { id: doc.id, ...doc.data() };
+                const data = doc.data();
+                // Ensure rating is a number if it exists
+                if (data.rating !== undefined && data.rating !== null) {
+                    data.rating = typeof data.rating === 'number' ? data.rating : parseInt(data.rating) || null;
+                }
+                return { id: doc.id, ...data };
             }
             return null;
         } catch (error) {
@@ -214,18 +238,32 @@ const DB = {
             // First, try the query with orderBy (requires composite index)
             // If it fails, fall back to getting all orders and filtering client-side
             try {
-                const snapshot = await db.collection('orders')
+                    const snapshot = await db.collection('orders')
                     .where('userId', '==', userId)
                     .orderBy('createdAt', 'desc')
                     .get();
-                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                return snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    // Ensure rating is properly handled (convert Firestore number to JavaScript number)
+                    if (data.rating !== undefined && data.rating !== null) {
+                        data.rating = typeof data.rating === 'number' ? data.rating : parseInt(data.rating) || null;
+                    }
+                    return { id: doc.id, ...data };
+                });
             } catch (indexError) {
                 // Composite index might not exist - fall back to client-side filtering
                 console.warn('Composite index not found, using fallback query:', indexError);
                 
                 // Get all orders and filter by userId, then sort by createdAt
                 const allOrdersSnapshot = await db.collection('orders').get();
-                const allOrders = allOrdersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const allOrders = allOrdersSnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    // Ensure rating is a number if it exists
+                    if (data.rating !== undefined && data.rating !== null) {
+                        data.rating = typeof data.rating === 'number' ? data.rating : parseInt(data.rating) || null;
+                    }
+                    return { id: doc.id, ...data };
+                });
                 
                 // Filter by userId (convert both to string to ensure match)
                 const userOrders = allOrders.filter(order => String(order.userId) === String(userId));
@@ -543,6 +581,10 @@ const DB = {
             
             const updatedDoc = await db.collection('orders').doc(orderDoc.id).get();
             const updatedData = updatedDoc.data();
+            // Ensure rating is a number
+            if (updatedData.rating !== undefined && updatedData.rating !== null) {
+                updatedData.rating = typeof updatedData.rating === 'number' ? updatedData.rating : parseInt(updatedData.rating) || null;
+            }
             console.log('💾 Rating saved - Updated order data:', updatedData);
             console.log('💾 Rating value in database:', updatedData.rating, 'Type:', typeof updatedData.rating);
             return { success: true, order: { id: updatedDoc.id, ...updatedData } };
@@ -597,6 +639,10 @@ const DB = {
                     (snapshot) => {
                         const orders = snapshot.docs.map(doc => {
                             const data = doc.data();
+                            // Ensure rating is a number if it exists
+                            if (data.rating !== undefined && data.rating !== null) {
+                                data.rating = typeof data.rating === 'number' ? data.rating : parseInt(data.rating) || null;
+                            }
                             return { 
                                 id: doc.id, 
                                 ...data,
@@ -620,6 +666,10 @@ const DB = {
                                     (snapshot) => {
                                         const allOrders = snapshot.docs.map(doc => {
                                             const data = doc.data();
+                                            // Ensure rating is a number if it exists
+                                            if (data.rating !== undefined && data.rating !== null) {
+                                                data.rating = typeof data.rating === 'number' ? data.rating : parseInt(data.rating) || null;
+                                            }
                                             return { 
                                                 id: doc.id, 
                                                 ...data,
@@ -717,6 +767,10 @@ const DB = {
                 (snapshot) => {
                     const allOrders = snapshot.docs.map(doc => {
                         const data = doc.data();
+                        // Ensure rating is a number if it exists
+                        if (data.rating !== undefined && data.rating !== null) {
+                            data.rating = typeof data.rating === 'number' ? data.rating : parseInt(data.rating) || null;
+                        }
                         return { 
                             id: doc.id, 
                             ...data,
@@ -745,6 +799,10 @@ const DB = {
                             (snapshot) => {
                                 const allOrders = snapshot.docs.map(doc => {
                                     const data = doc.data();
+                                    // Ensure rating is a number if it exists
+                                    if (data.rating !== undefined && data.rating !== null) {
+                                        data.rating = typeof data.rating === 'number' ? data.rating : parseInt(data.rating) || null;
+                                    }
                                     return { 
                                         id: doc.id, 
                                         ...data,
@@ -767,8 +825,20 @@ const DB = {
             );
     },
     
-    // Cleanup functions for deployment
+    // Cleanup functions for deployment (ADMIN ONLY)
     async clearAllOrders() {
+        // SECURITY: Check admin authentication
+        if (typeof Auth === 'undefined' || !Auth.isLoggedIn) {
+            console.error('❌ Unauthorized: Authentication system not available');
+            return { success: false, message: 'Unauthorized: Authentication required' };
+        }
+        
+        const user = Auth.isLoggedIn();
+        if (!user || !user.isAdmin) {
+            console.error('❌ Unauthorized: Admin access required');
+            return { success: false, message: 'Unauthorized: Admin access required' };
+        }
+        
         if (!isFirebaseAvailable()) {
             console.error('❌ Firebase not available');
             return { success: false, message: 'Firebase not available' };
@@ -790,6 +860,18 @@ const DB = {
     },
     
     async clearAllUsersExceptAdmin() {
+        // SECURITY: Check admin authentication
+        if (typeof Auth === 'undefined' || !Auth.isLoggedIn) {
+            console.error('❌ Unauthorized: Authentication system not available');
+            return { success: false, message: 'Unauthorized: Authentication required' };
+        }
+        
+        const user = Auth.isLoggedIn();
+        if (!user || !user.isAdmin) {
+            console.error('❌ Unauthorized: Admin access required');
+            return { success: false, message: 'Unauthorized: Admin access required' };
+        }
+        
         if (!isFirebaseAvailable()) {
             console.error('❌ Firebase not available');
             return { success: false, message: 'Firebase not available' };
@@ -829,6 +911,18 @@ const DB = {
     },
     
     async clearAllResetTokens() {
+        // SECURITY: Check admin authentication
+        if (typeof Auth === 'undefined' || !Auth.isLoggedIn) {
+            console.error('❌ Unauthorized: Authentication system not available');
+            return { success: false, message: 'Unauthorized: Authentication required' };
+        }
+        
+        const user = Auth.isLoggedIn();
+        if (!user || !user.isAdmin) {
+            console.error('❌ Unauthorized: Admin access required');
+            return { success: false, message: 'Unauthorized: Admin access required' };
+        }
+        
         if (!isFirebaseAvailable()) {
             console.error('❌ Firebase not available');
             return { success: false, message: 'Firebase not available' };
@@ -850,6 +944,18 @@ const DB = {
     },
     
     async clearAllRatings() {
+        // SECURITY: Check admin authentication
+        if (typeof Auth === 'undefined' || !Auth.isLoggedIn) {
+            console.error('❌ Unauthorized: Authentication system not available');
+            return { success: false, message: 'Unauthorized: Authentication required' };
+        }
+        
+        const user = Auth.isLoggedIn();
+        if (!user || !user.isAdmin) {
+            console.error('❌ Unauthorized: Admin access required');
+            return { success: false, message: 'Unauthorized: Admin access required' };
+        }
+        
         if (!isFirebaseAvailable()) {
             console.error('❌ Firebase not available');
             return { success: false, message: 'Firebase not available' };
@@ -870,8 +976,20 @@ const DB = {
         }
     },
     
-    // Clear everything except admin user (for deployment)
+    // Clear everything except admin user (for deployment) - ADMIN ONLY
     async clearAllDataForDeployment() {
+        // SECURITY: Check admin authentication
+        if (typeof Auth === 'undefined' || !Auth.isLoggedIn) {
+            console.error('❌ Unauthorized: Authentication system not available');
+            return { success: false, message: 'Unauthorized: Authentication required' };
+        }
+        
+        const user = Auth.isLoggedIn();
+        if (!user || !user.isAdmin) {
+            console.error('❌ Unauthorized: Admin access required');
+            return { success: false, message: 'Unauthorized: Admin access required' };
+        }
+        
         console.log('🧹 Starting deployment cleanup...');
         
         const results = {

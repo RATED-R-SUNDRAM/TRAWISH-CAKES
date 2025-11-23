@@ -280,7 +280,7 @@ const TrawishEmailService = {
 
         const emailData = {
             subject: `Advance Payment Received - Order ${order.orderId}`,
-            email: 'ratedrsundram@gmail.com',
+            email: 'k.kajalranjan@gmail.com',
             message: emailHTML
         };
 
@@ -362,7 +362,7 @@ const TrawishEmailService = {
         // EmailJS template expects: subject, email (to_email), message
         const emailData = {
             subject: `New Order Received - ${orderData.orderId}`,
-            email: 'ratedrsundram@gmail.com', // Admin email for testing
+            email: 'k.kajalranjan@gmail.com', // Admin email for testing
             message: emailHTML
         };
         

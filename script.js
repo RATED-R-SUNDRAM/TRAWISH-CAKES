@@ -1389,7 +1389,7 @@ function createOrderCardHTML(order) {
                         `}
                     </div>
                 ` : ''}
-                ${order.status === 5 && !order.rating ? `
+                ${order.status === 5 && (order.rating === undefined || order.rating === null || order.rating === '' || order.rating === 0) ? `
                     <div class="rating-section" style="background: #fff3cd; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 4px solid #ffc107;">
                         <h4 style="color: #856404; margin-top: 0;">⭐ Rate Your Experience</h4>
                         <p style="color: #856404; margin-bottom: 15px;">We'd love to hear your feedback! Please rate your order.</p>
@@ -1406,8 +1406,17 @@ function createOrderCardHTML(order) {
                         <h4 style="color: #0f5132; margin-top: 0;">⭐ Your Rating</h4>
                         <div style="color: #0f5132; margin-bottom: 10px;">
                             ${(() => {
-                                const ratingValue = parseInt(order.rating) || 0;
-                                console.log('⭐ Customer display - Order rating:', order.rating, 'Parsed:', ratingValue);
+                                // Ensure rating is a number (1-5)
+                                let ratingValue = order.rating;
+                                if (ratingValue !== undefined && ratingValue !== null) {
+                                    ratingValue = typeof ratingValue === 'number' ? ratingValue : parseInt(ratingValue);
+                                    if (isNaN(ratingValue) || ratingValue < 1 || ratingValue > 5) {
+                                        ratingValue = 0;
+                                    }
+                                } else {
+                                    ratingValue = 0;
+                                }
+                                console.log('⭐ Customer display - Order rating raw:', order.rating, 'Type:', typeof order.rating, 'Parsed:', ratingValue);
                                 return '⭐'.repeat(ratingValue) + '☆'.repeat(5 - ratingValue) + ' (' + ratingValue + '/5)';
                             })()}
                         </div>
