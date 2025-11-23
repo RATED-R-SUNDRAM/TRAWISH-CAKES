@@ -358,7 +358,11 @@ function createOrderCard(order) {
                 <div class="detail-item" style="margin-top: 15px; background: #d1e7dd; padding: 15px; border-radius: 10px; border-left: 4px solid #198754;">
                     <strong style="color: #0f5132;">Customer Rating</strong>
                     <div style="color: #0f5132; margin-top: 5px;">
-                        ${'⭐'.repeat(parseInt(order.rating) || 0)}${'☆'.repeat(5 - (parseInt(order.rating) || 0))} (${order.rating}/5)
+                        ${(() => {
+                            const ratingValue = parseInt(order.rating) || 0;
+                            console.log('⭐ Admin display - Order rating:', order.rating, 'Parsed:', ratingValue);
+                            return '⭐'.repeat(ratingValue) + '☆'.repeat(5 - ratingValue) + ' (' + ratingValue + '/5)';
+                        })()}
                     </div>
                     ${order.ratingComment ? `
                         <p style="color: #0f5132; margin: 10px 0 0 0; font-style: italic;">"${order.ratingComment}"</p>

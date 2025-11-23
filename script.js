@@ -1405,7 +1405,11 @@ function createOrderCardHTML(order) {
                     <div class="rating-display" style="background: #d1e7dd; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 4px solid #198754;">
                         <h4 style="color: #0f5132; margin-top: 0;">⭐ Your Rating</h4>
                         <div style="color: #0f5132; margin-bottom: 10px;">
-                            ${'⭐'.repeat(parseInt(order.rating) || 0)}${'☆'.repeat(5 - (parseInt(order.rating) || 0))} (${order.rating}/5)
+                            ${(() => {
+                                const ratingValue = parseInt(order.rating) || 0;
+                                console.log('⭐ Customer display - Order rating:', order.rating, 'Parsed:', ratingValue);
+                                return '⭐'.repeat(ratingValue) + '☆'.repeat(5 - ratingValue) + ' (' + ratingValue + '/5)';
+                            })()}
                         </div>
                         ${order.ratingComment ? `<p style="color: #0f5132; margin: 0; font-style: italic;">"${order.ratingComment}"</p>` : ''}
                         <p style="color: #0f5132; margin-top: 10px; font-size: 0.9rem;">Thank you for your feedback! 💝</p>
@@ -2016,13 +2020,21 @@ function setRating(orderId, rating) {
 }
 
 async function submitRating(orderId) {
-    // Get rating from stored value or find from stars
-    let rating = selectedRating[orderId];
+    console.log('⭐ SubmitRating called for order:', orderId);
+    console.log('⭐ Current selectedRating object:', selectedRating);
+    console.log('⭐ Stored rating for this order:', selectedRating[orderId]);
+    
+    // Get rating from stored value first (most reliable)
+    let rating = selectedRating[orderId] || currentRating[orderId];
+    
+    console.log('⭐ Rating from stored value:', rating);
     
     // If not in stored value, find from stars (fallback)
-    if (!rating) {
+    if (!rating || rating === 0) {
+        console.log('⭐ Rating not found in stored value, searching stars...');
         const ratingCard = document.querySelector(`[data-order-id="${orderId}"]`);
         if (!ratingCard) {
+            console.error('⭐ Rating card not found for order:', orderId);
             if (typeof CustomModal !== 'undefined') {
                 CustomModal.alert('Order not found');
             } else {
@@ -2034,18 +2046,25 @@ async function submitRating(orderId) {
         // Find all selected stars and get the highest rating
         const allStars = ratingCard.querySelectorAll('.star-rating');
         let highestRating = 0;
-        allStars.forEach(star => {
+        
+        console.log('⭐ Found', allStars.length, 'stars');
+        
+        allStars.forEach((star, index) => {
+            const starRating = parseInt(star.getAttribute('data-rating'));
             const starColor = star.style.color || window.getComputedStyle(star).color;
+            console.log(`⭐ Star ${index + 1}: rating=${starRating}, color=${starColor}`);
+            
             // Check if color is yellow (#ffc107 or rgb(255, 193, 7))
-            if (starColor.includes('rgb(255, 193, 7)') || starColor.includes('#ffc107') || starColor.includes('255, 193, 7')) {
-                const starRating = parseInt(star.getAttribute('data-rating'));
+            if (starColor.includes('rgb(255, 193, 7)') || starColor.includes('#ffc107') || starColor.includes('255, 193, 7') || starColor === 'rgb(255, 193, 7)') {
                 if (starRating > highestRating) {
                     highestRating = starRating;
+                    console.log('⭐ Found highlighted star with rating:', highestRating);
                 }
             }
         });
         
         if (highestRating === 0) {
+            console.error('⭐ No highlighted stars found!');
             if (typeof CustomModal !== 'undefined') {
                 CustomModal.alert('Please select a rating by clicking on the stars');
             } else {
@@ -2055,24 +2074,47 @@ async function submitRating(orderId) {
         }
         
         rating = highestRating;
+        console.log('⭐ Using highest rating from stars:', rating);
     }
     
     // Ensure rating is a number between 1-5
     rating = parseInt(rating);
+    console.log('⭐ Final rating value (parsed):', rating, '(type:', typeof rating, ')');
+    
     if (isNaN(rating) || rating < 1 || rating > 5) {
+        console.error('⭐ Invalid rating value:', rating);
         if (typeof CustomModal !== 'undefined') {
-            CustomModal.alert('Please select a valid rating (1-5 stars)');
+            CustomModal.alert('Please select a valid rating (1-5 stars). Current value: ' + rating);
         } else {
-            alert('Please select a valid rating (1-5 stars)');
+            alert('Please select a valid rating (1-5 stars). Current value: ' + rating);
         }
         return;
     }
     
     const comment = document.getElementById(`ratingComment_${orderId}`)?.value || '';
-    console.log('⭐ Submitting rating:', rating, 'for order:', orderId);
+    console.log('⭐ FINAL: Submitting rating:', rating, '(as number:', typeof rating, ')', 'for order:', orderId);
+    console.log('⭐ Comment:', comment);
+    
+    // Double-check rating is a valid number before submitting
+    if (typeof rating !== 'number' || rating < 1 || rating > 5) {
+        console.error('❌ Invalid rating before submission:', rating, 'type:', typeof rating);
+        if (typeof CustomModal !== 'undefined') {
+            CustomModal.alert('Error: Invalid rating value. Please try selecting the stars again.');
+        } else {
+            alert('Error: Invalid rating value. Please try selecting the stars again.');
+        }
+        return;
+    }
+    
     const result = await DB.submitRating(orderId, rating, comment);
     
+    console.log('⭐ Database result:', result);
+    
     if (result && result.success) {
+        // Clear the stored rating after successful submission
+        delete selectedRating[orderId];
+        delete currentRating[orderId];
+        
         if (typeof CustomModal !== 'undefined') {
             CustomModal.alert('Thank you for your rating! 💝', () => {
                 loadUserOrders();
@@ -2086,10 +2128,12 @@ async function submitRating(orderId) {
             loadUserOrders();
         }
     } else {
+        const errorMsg = result ? result.message : 'Unknown error';
+        console.error('❌ Error submitting rating:', errorMsg);
         if (typeof CustomModal !== 'undefined') {
-            CustomModal.alert('Error submitting rating: ' + (result ? result.message : 'Unknown error'));
+            CustomModal.alert('Error submitting rating: ' + errorMsg);
         } else {
-            alert('Error submitting rating: ' + (result ? result.message : 'Unknown error'));
+            alert('Error submitting rating: ' + errorMsg);
         }
     }
 }

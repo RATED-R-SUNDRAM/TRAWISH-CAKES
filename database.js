@@ -542,7 +542,10 @@ const DB = {
             });
             
             const updatedDoc = await db.collection('orders').doc(orderDoc.id).get();
-            return { success: true, order: { id: updatedDoc.id, ...updatedDoc.data() } };
+            const updatedData = updatedDoc.data();
+            console.log('💾 Rating saved - Updated order data:', updatedData);
+            console.log('💾 Rating value in database:', updatedData.rating, 'Type:', typeof updatedData.rating);
+            return { success: true, order: { id: updatedDoc.id, ...updatedData } };
         } catch (error) {
             console.error('Error submitting rating:', error);
             return { success: false, message: error.message };
