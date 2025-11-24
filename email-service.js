@@ -161,7 +161,7 @@ const TrawishEmailService = {
             <div class="regards">
                 <p><strong>Best Regards,</strong></p>
                 <p><strong>Trawish Cakes Team</strong></p>
-                <p>📧 Email: trawishcakes@gmail.com</p>
+                <p>📧 Email: k.kajalranjan@gmail.com</p>
                 <p>📍 Address: 1103 Solacia Phase 1 Solacia Internal Road, RMC Garden, Wagholi, Pune, Maharashtra 412207, India</p>
             </div>
             ` : ''}
